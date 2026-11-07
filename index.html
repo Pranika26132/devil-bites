@@ -11,67 +11,119 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="phone">
 
-    <!-- ── Search ─────────────────────────────── -->
-    <main class="screen" id="view-search" aria-labelledby="tab-search">
-      <header class="top">
-        <p class="eyebrow">Search</p>
-        <h1 class="title">Find the cheapest spot</h1>
-      </header>
+  <!-- ── Browse (home) ──────────────────────────── -->
+  <main class="view" id="view-browse" data-tab="browse">
+    <header class="top">
+      <p class="eyebrow">Pace</p>
+      <h1 class="title">Find the cheapest spot</h1>
+    </header>
 
+    <div class="search-wrap">
       <form class="search" role="search" onsubmit="return false">
         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
           <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <input id="q" type="search" placeholder="Search a snack or drink" autocomplete="off"
-               autocapitalize="off" spellcheck="false" aria-label="Search items">
+               autocapitalize="off" spellcheck="false" aria-label="Search items" aria-controls="browse-list">
         <button type="button" class="clear" id="clear" aria-label="Clear search" hidden>×</button>
       </form>
+    </div>
 
-      <section id="results" aria-live="polite"></section>
-    </main>
+    <div class="chip-row" id="filters" role="group" aria-label="Filter by category"></div>
 
-    <!-- ── Browse ─────────────────────────────── -->
-    <main class="screen" id="view-browse" aria-labelledby="tab-browse" hidden>
-      <header class="top">
-        <p class="eyebrow">Browse</p>
-        <h1 class="title">Everything on campus</h1>
-      </header>
+    <div class="sort-row" role="group" aria-label="Sort">
+      <span class="sort-label">Sort</span>
+      <div class="sorts" id="sorts"></div>
+    </div>
 
-      <div class="chip-row" id="filters" role="group" aria-label="Filter by category"></div>
+    <p class="notice" id="browse-notice" role="status" hidden></p>
 
-      <div class="sort-row" role="group" aria-label="Sort">
-        <span class="sort-label">Sort</span>
-        <div class="sorts" id="sorts"></div>
-      </div>
+    <p class="count" id="browse-count" aria-live="polite"></p>
+    <section class="cards" id="browse-list"></section>
+  </main>
 
-      <p class="count" id="browse-count"></p>
-      <section class="cards" id="browse-list"></section>
-    </main>
+  <!-- ── Item price comparison ──────────────────── -->
+  <main class="view" id="view-item" data-tab="browse" hidden>
+    <button type="button" class="back" id="back">‹ <span id="back-label">Browse</span></button>
+    <section id="item-detail"></section>
+  </main>
 
-    <!-- ── Tab bar ────────────────────────────── -->
-    <nav class="tabbar" role="tablist" aria-label="Screens">
-      <button type="button" class="tab" id="tab-search" role="tab" data-view="search" aria-controls="view-search">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>Search</span>
-      </button>
-      <button type="button" class="tab" id="tab-browse" role="tab" data-view="browse" aria-controls="view-browse">
+  <!-- ── Coming soon ────────────────────────────── -->
+  <main class="view" id="view-deals" data-tab="deals" hidden>
+    <header class="top">
+      <p class="eyebrow">Deals</p>
+      <h1 class="title">Same snack, lower price</h1>
+    </header>
+    <p class="count" id="deals-count"></p>
+    <section class="cards" id="deals-list"></section>
+  </main>
+
+  <main class="view" id="view-protein" data-tab="protein" hidden>
+    <header class="top">
+      <p class="eyebrow">Protein</p>
+      <h1 class="title">The most protein for your points</h1>
+    </header>
+    <div class="soon">
+      <span class="tag">Coming soon</span>
+      <p>Every protein snack ranked by what 20 grams of protein really costs, at the cheapest spot on campus.</p>
+    </div>
+  </main>
+
+  <main class="view" id="view-me" data-tab="me" hidden>
+    <header class="top">
+      <p class="eyebrow">My Pace</p>
+      <h1 class="title">One number, every day</h1>
+    </header>
+    <div class="soon">
+      <span class="tag">Coming soon</span>
+      <p>Enter your food points balance and Pace turns it into what you can spend today and still last the semester.</p>
+    </div>
+  </main>
+
+  <footer class="credit">
+    Product photos from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>
+    (<a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA</a>)
+  </footer>
+
+  <!-- ── Tab bar ────────────────────────────────── -->
+  <nav class="tabbar" aria-label="Main">
+    <div class="tabs">
+      <a class="tab" href="#/browse" data-tab="browse">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="4" y="4" width="16" height="4.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
           <rect x="4" y="11" width="16" height="4.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
           <path d="M6 19.5h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <span>Browse</span>
-      </button>
-    </nav>
-  </div>
+      </a>
+      <a class="tab" href="#/deals" data-tab="deals">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3.5 12.6V4.5a1 1 0 0 1 1-1h8.1a1 1 0 0 1 .7.3l7.2 7.2a1 1 0 0 1 0 1.4l-8.1 8.1a1 1 0 0 1-1.4 0l-7.2-7.2a1 1 0 0 1-.3-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/>
+        </svg>
+        <span>Deals</span>
+      </a>
+      <a class="tab" href="#/protein" data-tab="protein">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Protein</span>
+      </a>
+      <a class="tab" href="#/me" data-tab="me">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 16a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 16l3.5-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16" r="1.6" fill="currentColor"/>
+        </svg>
+        <span>My Pace</span>
+      </a>
+    </div>
+  </nav>
 
   <script src="data/prices.js"></script>
+  <script src="data/photos.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

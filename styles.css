@@ -11,10 +11,14 @@
   --radius: 18px;
   --head: "Fredoka", system-ui, sans-serif;
   --body: "Nunito Sans", system-ui, sans-serif;
+
+  --max: 680px;          /* content width on big screens */
+  --tabbar-h: 64px;
 }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+html { scroll-padding-top: 90px; }
 
 body {
   background: var(--cream);
@@ -24,77 +28,32 @@ body {
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
-/* ── Phone frame (desktop only) ───────────────────────────── */
-/* The phone is a column: a scrolling screen on top, the tab bar pinned below. */
-.phone {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  background: var(--cream);
-}
-.screen {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: max(28px, env(safe-area-inset-top)) max(20px, calc((100% - 460px) / 2)) 28px;
-}
-.screen[hidden] { display: none; }
-
-@media (min-width: 640px) {
-  body {
-    display: grid;
-    place-items: center;
-    min-height: 100dvh;
-    padding: 32px 16px;
-  }
-  .phone {
-    width: 390px;
-    height: min(820px, calc(100dvh - 64px));
-    border: 14px solid var(--ink);
-    border-radius: 52px;
-    box-shadow: 0 30px 60px -20px rgba(19, 36, 29, .35);
-    overflow: hidden;
-  }
-  .screen {
-    padding: 36px 22px 28px;
-    scrollbar-width: none;
-  }
-  .screen::-webkit-scrollbar { display: none; }
+/* ── Page layout ──────────────────────────────────────────── */
+.view {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: max(28px, env(safe-area-inset-top)) 20px 8px;
+  min-height: 70vh;
 }
 
-/* ── Bottom tab bar ───────────────────────────────────────── */
-.tabbar {
-  flex: none;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 20px max(10px, env(safe-area-inset-bottom));
-  background: var(--card);
-  border-top: 1.5px solid var(--line);
-}
-.tab {
-  flex: 1;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 0 4px;
-  border: 0;
-  border-radius: 14px;
-  background: none;
+/* Photo credit, just above the tab bar */
+.credit {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 20px 20px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 24px);
+  text-align: center;
   color: var(--muted);
-  font: 700 12.5px var(--body);
-  cursor: pointer;
+  font-size: 12.5px;
 }
-.tab svg { width: 24px; height: 24px; }
-.tab[aria-selected="true"] { color: var(--ink); }
-.tab[aria-selected="true"] svg { color: var(--green); }
-@media (min-width: 640px) { .tabbar { padding-bottom: 18px; } }
+.credit a { color: inherit; }
+.view[hidden] { display: none; }
+
+@media (min-width: 760px) {
+  .view { padding-top: 48px; padding-left: 0; padding-right: 0; }
+}
 
 /* ── Header ───────────────────────────────────────────────── */
 .top { margin-bottom: 16px; }
@@ -115,7 +74,17 @@ body {
   letter-spacing: -.01em;
 }
 
-/* ── Search pill ──────────────────────────────────────────── */
+/* ── Search pill (sticks to the top while scrolling) ──────── */
+.search-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -20px;
+  padding: 10px 20px 10px;
+  background: var(--cream);
+}
+@media (min-width: 760px) { .search-wrap { margin: 0; padding: 10px 0; } }
+
 .search {
   position: relative;
   display: flex;
@@ -152,8 +121,85 @@ body {
   cursor: pointer;
 }
 
-/* ── Results ──────────────────────────────────────────────── */
-#results { margin-top: 14px; }
+/* ── Category chips & sort (scroll sideways on phones) ────── */
+.chip-row, .sort-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.chip-row::-webkit-scrollbar, .sort-row::-webkit-scrollbar { display: none; }
+.chip-row { margin-top: 6px; padding-top: 2px; padding-bottom: 4px; }
+.sort-row { gap: 10px; margin-top: 10px; margin-bottom: 16px; }
+@media (min-width: 760px) {
+  .chip-row, .sort-row { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; flex-wrap: wrap; }
+}
+
+.chip {
+  flex: none;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: 700 14.5px var(--body);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--green); }
+.chip[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--card);
+}
+
+.sort-label {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sorts {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+}
+.sort {
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink);
+  padding: 6px 12px;
+  font: 700 14px var(--body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sort[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.sort:disabled { opacity: .5; cursor: progress; }
+
+.notice {
+  margin: -4px 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--green-tint);
+  color: var(--ink);
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.notice[data-kind="warn"] {
+  background: #FCEBDC;
+  border-left: 4px solid var(--orange);
+}
 
 .count {
   margin: 0 0 12px 2px;
@@ -161,27 +207,7 @@ body {
   font-size: 15px;
 }
 
-.item-name {
-  margin: 4px 0 2px 2px;
-  font-family: var(--head);
-  font-weight: 600;
-  font-size: 22px;
-  line-height: 1.15;
-}
-
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 0 8px;
-  padding: 6px 0;
-  border: 0;
-  background: none;
-  color: var(--green);
-  font: 700 14px var(--body);
-  cursor: pointer;
-}
-
+/* ── Cards ────────────────────────────────────────────────── */
 .cards { display: grid; gap: 12px; }
 
 .card {
@@ -220,7 +246,6 @@ body {
 .note { font-style: italic; }
 
 .price {
-  flex: none;
   font-family: var(--head);
   font-weight: 700;
   font-size: 26px;
@@ -233,6 +258,100 @@ body {
 .card.unpriced { background: transparent; border-style: dashed; }
 .card.unpriced .price { color: var(--muted); font-size: 15px; font-family: var(--body); font-weight: 700; }
 
+.price-col {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.walk {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* Product photo, or a category icon when there's no photo */
+.thumb {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+img.thumb {
+  background: #fff;
+  border: 1px solid var(--line);
+  object-fit: contain;
+  padding: 3px;
+}
+.thumb.icon { background: var(--green-tint); color: var(--green); }
+.thumb.icon svg { width: 54%; height: 54%; }
+.thumb.big { width: 76px; height: 76px; border-radius: 16px; }
+
+.item-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.item-head .count { margin: 0 0 0 2px; }
+.photo-credit { font-size: 12px; color: var(--muted); margin: 2px 0 0 2px; }
+.photo-credit a { color: inherit; }
+
+/* Browse rows */
+.row {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: border-color .15s, transform .1s;
+}
+.row:hover { border-color: var(--green); }
+.row:active { transform: scale(.99); }
+.row { justify-content: flex-start; }
+.row .card-main { flex: 1; }
+.row .place { font-size: 16px; }
+.row .where { margin: 2px 0 0; color: var(--muted); font-size: 14.5px; }
+.row .price { font-size: 22px; }
+.row.unpriced .price { font-size: 14px; }
+
+.tag {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--green-tint);
+  color: var(--green);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+/* ── Item price comparison ────────────────────────────────── */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 10px -2px;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  color: var(--green);
+  font: 800 15px var(--body);
+  cursor: pointer;
+}
+.item-name {
+  margin: 0 0 2px 2px;
+  font-family: var(--head);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.1;
+}
 .section-label {
   margin: 22px 0 10px 2px;
   font-size: 12.5px;
@@ -241,8 +360,6 @@ body {
   text-transform: uppercase;
   color: var(--muted);
 }
-
-/* Dark savings card */
 .tip {
   margin-top: 22px;
   background: var(--ink);
@@ -257,50 +374,70 @@ body {
   font-size: 16px;
 }
 .tip p:last-child { margin: 0; font-size: 15.5px; line-height: 1.45; }
-
 .single {
   margin: 14px 2px 0;
   color: var(--muted);
   font-size: 14px;
 }
 
-/* Multi-match list */
-.match {
+/* ── Deals ────────────────────────────────────────────────── */
+.deal {
   width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   text-align: left;
   font: inherit;
   color: inherit;
   cursor: pointer;
   transition: border-color .15s, transform .1s;
 }
-.match:hover { border-color: var(--green); }
-.match:active { transform: scale(.99); }
-.match .from { text-align: right; flex: none; }
-.match .from small {
-  display: block;
-  color: var(--muted);
-  font: 600 12px var(--body);
-  margin-bottom: 3px;
-}
-.match .from .price { font-size: 22px; }
-.chev { color: var(--muted); font-size: 22px; margin-left: 2px; }
-
-/* Empty / start state */
-.start-hint { margin: 6px 2px 12px; color: var(--muted); font-size: 15px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  border: 1.5px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
+.deal:hover { border-color: var(--green); }
+.deal:active { transform: scale(.99); }
+.deal .place { font-size: 16px; }
+.deal .where { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.deal-top { display: flex; align-items: center; gap: 12px; }
+.deal-top .card-main { flex: 1; }
+.save {
+  flex: none;
+  align-self: flex-start;
+  padding: 4px 10px;
   border-radius: 999px;
-  padding: 8px 14px;
-  font: 700 14.5px var(--body);
-  cursor: pointer;
+  background: var(--ink);
+  color: var(--card);
+  font-family: var(--head);
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
 }
-.chip:hover { border-color: var(--green); }
+.deal-rows {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1.5px solid var(--line);
+}
+.deal-row {
+  display: grid;
+  grid-template-columns: 74px 1fr auto;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14.5px;
+}
+.deal-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.deal-spot { color: var(--muted); min-width: 0; }
+.deal-price { font-family: var(--head); font-weight: 700; font-size: 17px; }
+.deal-row.cheap .deal-label,
+.deal-row.cheap .deal-spot { color: var(--green); font-weight: 800; }
+.deal-row.cheap .deal-price { color: var(--green); }
 
-.empty {
-  margin-top: 8px;
+/* ── Empty & coming soon ──────────────────────────────────── */
+.empty, .soon {
   background: var(--card);
   border: 1.5px dashed var(--line);
   border-radius: var(--radius);
@@ -308,94 +445,50 @@ body {
   color: var(--muted);
 }
 .empty strong { color: var(--ink); }
+.empty .chip { margin-top: 12px; }
+.soon { border-style: solid; }
+.soon .tag { margin: 0 0 10px; background: #FCEBDC; color: #A4521A; }
+.soon p { margin: 0; font-size: 16px; line-height: 1.5; }
 
-.footnote {
-  margin: 26px 2px 0;
-  color: var(--muted);
-  font-size: 12.5px;
-}
-
-/* ── Browse ───────────────────────────────────────────────── */
-.chip-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin: 0 -20px;
-  padding: 2px 20px 4px;
-}
-.chip-row::-webkit-scrollbar { display: none; }
-@media (min-width: 640px) { .chip-row { margin: 0 -22px; padding: 2px 22px 4px; } }
-.chip-row .chip { flex: none; }
-
-.chip[aria-pressed="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--card);
-}
-
-.sort-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 12px 0 16px;
-}
-.sort-label {
-  flex: none;
-  font-size: 12.5px;
-  font-weight: 800;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.sorts {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
+/* ── Bottom tab bar ───────────────────────────────────────── */
+.tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 10;
   background: var(--card);
-  border: 1.5px solid var(--line);
-  border-radius: 999px;
+  border-top: 1.5px solid var(--line);
+  padding: 6px 12px max(8px, env(safe-area-inset-bottom));
 }
-.sort {
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--ink);
-  padding: 6px 12px;
-  font: 700 14px var(--body);
-  white-space: nowrap;
-  cursor: pointer;
+.tabs {
+  max-width: var(--max);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
 }
-.sort[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.tab {
+  flex: 1;
+  max-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0 4px;
+  border-radius: 14px;
+  color: var(--muted);
+  font: 700 12.5px var(--body);
+  text-decoration: none;
+}
+.tab svg { width: 24px; height: 24px; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--ink); }
+.tab[aria-current="page"] svg { color: var(--green); }
 
-.row {
-  width: 100%;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  padding: 14px 16px;
-  transition: border-color .15s, transform .1s;
-}
-.row:hover { border-color: var(--green); }
-.row:active { transform: scale(.99); }
-.row .place { font-size: 16px; }
-.row .where { margin: 2px 0 0; color: var(--muted); font-size: 14.5px; }
-.row .price { font-size: 22px; }
-.tag {
-  display: inline-block;
-  margin-top: 5px;
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: var(--green-tint);
-  color: var(--green);
-  font-size: 12.5px;
-  font-weight: 800;
-}
-.row.unpriced { background: transparent; border-style: dashed; }
-.row.unpriced .price { color: var(--muted); font: 700 14px var(--body); }
-
-button:focus-visible, .chip:focus-visible {
+button:focus-visible, .chip:focus-visible, .tab:focus-visible {
   outline: 2.5px solid var(--orange);
   outline-offset: 2px;
+}
+
+/* Larger headings on big screens (kept last so it wins) */
+@media (min-width: 760px) {
+  .title, .item-name { font-size: 34px; }
 }

@@ -10,18 +10,20 @@
     so the app never compares a small can against a big one.
 */
 window.PACE_DATA = {
+  // lat/lng power the "Closest" and "Best nearby" sorts. Spots without
+  // coordinates still show up; they just sort after the ones with a distance.
   locations: {
-    lobby:          { name: "Lobby Shop", area: "Bryan Center" },
-    bcVending:      { name: "Bryan Center vending" },
-    wuVending:      { name: "West Union vending" },
-    trinityVending: { name: "Trinity vending" },
-    wuCafe:         { name: "West Union café" },
-    bellaUnion:     { name: "Bella Union" },
-    trinityCafe:    { name: "Trinity Café" },
-    wilsonCafe:     { name: "Wilson Café" },
-    tandoor:        { name: "Tandoor" },
-    farmstead:      { name: "Farmstead" },
-    bryanCenter:    { name: "Bryan Center", area: "exact spot not recorded" },
+    lobby:          { name: "Lobby Shop", area: "Bryan Center", lat: 36.001224306804275, lng: -78.94102207511004 },
+    bcVending:      { name: "Bryan Center vending", lat: 36.001224306804275, lng: -78.94102207511004 },
+    wuVending:      { name: "West Union vending", lat: 36.00108780707493, lng: -78.93924924627412 },
+    trinityVending: { name: "Trinity vending" },                 // coordinates needed
+    wuCafe:         { name: "West Union café", lat: 36.00108780707493, lng: -78.93924924627412 },
+    bellaUnion:     { name: "Bella Union", lat: 35.999447140847785, lng: -78.93699803753199 },
+    trinityCafe:    { name: "Trinity Café", lat: 36.0077398746094, lng: -78.91386068250522 },
+    wilsonCafe:     { name: "Wilson Café" },                     // coordinates needed
+    tandoor:        { name: "Tandoor" },                         // coordinates needed
+    farmstead:      { name: "Farmstead" },                       // coordinates needed
+    bryanCenter:    { name: "Bryan Center", area: "exact spot not recorded", lat: 36.001224306804275, lng: -78.94102207511004 },
   },
 
   // category: Drinks · Energy · Snacks · Sweets · Protein · Meals
