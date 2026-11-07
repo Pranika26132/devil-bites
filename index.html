@@ -12,9 +12,11 @@
 </head>
 <body>
   <div class="phone">
-    <main class="screen">
+
+    <!-- ── Search ─────────────────────────────── -->
+    <main class="screen" id="view-search" aria-labelledby="tab-search">
       <header class="top">
-        <p class="eyebrow">Snacks</p>
+        <p class="eyebrow">Search</p>
         <h1 class="title">Find the cheapest spot</h1>
       </header>
 
@@ -30,6 +32,43 @@
 
       <section id="results" aria-live="polite"></section>
     </main>
+
+    <!-- ── Browse ─────────────────────────────── -->
+    <main class="screen" id="view-browse" aria-labelledby="tab-browse" hidden>
+      <header class="top">
+        <p class="eyebrow">Browse</p>
+        <h1 class="title">Everything on campus</h1>
+      </header>
+
+      <div class="chip-row" id="filters" role="group" aria-label="Filter by category"></div>
+
+      <div class="sort-row" role="group" aria-label="Sort">
+        <span class="sort-label">Sort</span>
+        <div class="sorts" id="sorts"></div>
+      </div>
+
+      <p class="count" id="browse-count"></p>
+      <section class="cards" id="browse-list"></section>
+    </main>
+
+    <!-- ── Tab bar ────────────────────────────── -->
+    <nav class="tabbar" role="tablist" aria-label="Screens">
+      <button type="button" class="tab" id="tab-search" role="tab" data-view="search" aria-controls="view-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Search</span>
+      </button>
+      <button type="button" class="tab" id="tab-browse" role="tab" data-view="browse" aria-controls="view-browse">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="4.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="4" y="11" width="16" height="4.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M6 19.5h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Browse</span>
+      </button>
+    </nav>
   </div>
 
   <script src="data/prices.js"></script>

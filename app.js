@@ -216,6 +216,16 @@
   $q.addEventListener("keydown", (e) => { if (e.key === "Enter") $q.blur(); });
   $clear.addEventListener("click", () => { $q.value = ""; update(); $q.focus(); });
 
+  // Shows one item's full comparison on the Search screen.
+  function openItem(it) {
+    $q.value = it.name;
+    $clear.hidden = false;
+    lastList = [it];
+    renderDetail(it);
+    showView("search");
+    $viewSearch.scrollTop = 0;
+  }
+
   $results.addEventListener("click", (e) => {
     const target = e.target.closest("[data-item], [data-back]");
     if (!target) return;
@@ -225,17 +235,126 @@
     }
     const it = byName.get(target.dataset.item);
     if (!it) return;
-    if (target.classList.contains("chip")) {
-      $q.value = it.name;
-      $clear.hidden = false;
-      lastList = [it];
-      renderDetail(it);
-    } else {
-      renderDetail(it, { showBack: true });
+    if (target.classList.contains("chip")) openItem(it);
+    else { renderDetail(it, { showBack: true }); $viewSearch.scrollTop = 0; }
+  });
+
+  // ── Browse ──
+  const FILTERS = ["All", "Drinks", "Energy", "Snacks", "Sweets", "Protein"];
+  const SORTS = [
+    { id: "price-asc",  label: "Price ↑",   full: "Price low to high" },
+    { id: "price-desc", label: "Price ↓",   full: "Price high to low" },
+    { id: "relevance",  label: "Relevance", full: "Relevance: best deals first" },
+  ];
+
+  const $viewSearch = document.getElementById("view-search");
+  const $viewBrowse = document.getElementById("view-browse");
+  const $filters = document.getElementById("filters");
+  const $sorts = document.getElementById("sorts");
+  const $browseList = document.getElementById("browse-list");
+  const $browseCount = document.getElementById("browse-count");
+
+  // Small per-device memory of the last tab, filter and sort.
+  const store = {
+    get(k, fallback) { try { return localStorage.getItem("pace." + k) ?? fallback; } catch { return fallback; } },
+    set(k, v) { try { localStorage.setItem("pace." + k, v); } catch { /* storage unavailable */ } },
+  };
+  let filter = store.get("filter", "All");
+  let sort = store.get("sort", "price-asc");
+  if (!FILTERS.includes(filter)) filter = "All";
+  if (!SORTS.some((s) => s.id === sort)) sort = "price-asc";
+
+  // Per-item facts the Browse rows need: the cheapest price, and how big the deal is.
+  const itemFacts = new Map(catalog.map((it) => {
+    const a = analyze(it);
+    return [it, { a, gap: a.hasCompare ? a.max - a.min : 0, places: new Set(a.known.map((e) => e.loc)).size }];
+  }));
+
+  const byNameNumeric = (a, b) => a.item.localeCompare(b.item, undefined, { numeric: true });
+
+  function browseRows() {
+    const rows = [];
+    for (const it of catalog) {
+      if (filter !== "All" && it.category !== filter) continue;
+      for (const e of it.entries) rows.push({ ...e, it });
     }
-    document.querySelector(".screen").scrollTop = 0;
-    window.scrollTo(0, 0);
+    const unpricedLast = (a, b) => (a.price == null) - (b.price == null);
+
+    if (sort === "price-asc") rows.sort((a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+    else if (sort === "price-desc") rows.sort((a, b) => unpricedLast(a, b) || b.price - a.price || byNameNumeric(a, b));
+    else {
+      // Relevance: biggest savings first, then items sold in the most places.
+      // Each item's spots stay together, cheapest first.
+      rows.sort((a, b) => {
+        const fa = itemFacts.get(a.it), fb = itemFacts.get(b.it);
+        return fb.gap - fa.gap || fb.places - fa.places || byNameNumeric(a, b)
+          || unpricedLast(a, b) || (a.price ?? 0) - (b.price ?? 0);
+      });
+    }
+    return rows;
+  }
+
+  function browseRow(r) {
+    const { a } = itemFacts.get(r.it);
+    const isBest = a.hasCompare && r.loc && r.price === a.min;
+    const unpriced = r.price == null;
+    const where = [locName(r.loc), r.size].filter(Boolean).join(" · ");
+    return `
+      <button type="button" class="card row${unpriced ? " unpriced" : ""}" data-item="${esc(r.item)}">
+        <span class="card-main">
+          <p class="place">${esc(r.item)}</p>
+          <p class="where">${esc(where)}</p>
+          ${isBest ? `<span class="tag">Best price</span>` : ""}
+        </span>
+        <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
+      </button>`;
+  }
+
+  function renderBrowse() {
+    $filters.innerHTML = FILTERS.map((f) =>
+      `<button type="button" class="chip" data-filter="${f}" aria-pressed="${f === filter}">${f}</button>`).join("");
+    $sorts.innerHTML = SORTS.map((s) =>
+      `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === sort}" aria-label="${s.full}" title="${s.full}">${s.label}</button>`).join("");
+    const rows = browseRows();
+    const nItems = new Set(rows.map((r) => r.item)).size;
+    $browseCount.textContent = `${nItems} items · ${rows.length} prices`;
+    $browseList.innerHTML = rows.map(browseRow).join("");
+  }
+
+  $filters.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-filter]");
+    if (!b) return;
+    filter = b.dataset.filter;
+    store.set("filter", filter);
+    renderBrowse();
+    $viewBrowse.scrollTop = 0;
+  });
+  $sorts.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-sort]");
+    if (!b) return;
+    sort = b.dataset.sort;
+    store.set("sort", sort);
+    renderBrowse();
+  });
+  $browseList.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-item]");
+    const it = b && byName.get(b.dataset.item);
+    if (it) openItem(it);
+  });
+
+  // ── Tabs ──
+  const views = { search: $viewSearch, browse: $viewBrowse };
+  function showView(name) {
+    for (const [key, el] of Object.entries(views)) el.hidden = key !== name;
+    document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", String(t.dataset.view === name)));
+    store.set("view", name);
+  }
+  document.querySelector(".tabbar").addEventListener("click", (e) => {
+    const t = e.target.closest("[data-view]");
+    if (t) showView(t.dataset.view);
   });
 
   update();
+  renderBrowse();
+  showView(store.get("view", "search") === "browse" ? "browse" : "search");
 })();
