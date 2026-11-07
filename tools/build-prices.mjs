@@ -11,12 +11,14 @@
 //   - Each item's category, other spellings, caffeine and protein are kept from the
 //     current data/prices.js; brand-new items get theirs from NEW_ITEMS.
 //   - Rows for the same item, place and price are merged (flavors combined).
+//   - Search tags are rebuilt afterwards (tools/build-tags.mjs).
 // Prints what changed compared with the current data/prices.js.
 
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
+import { buildTags } from "./build-tags.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "data", "prices.js");
@@ -573,3 +575,7 @@ console.log(
   section("Items dropped (no rows left)", report.droppedItems) +
   section("Skipped on purpose", skipped) +
   section("Problems", problems));
+
+// Search tags follow the new item list (data/tags.js, tag-report.md).
+console.log();
+buildTags();

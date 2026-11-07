@@ -55,7 +55,7 @@ window.PACE_DATA = {
     "LIFEWTR": { category: "Drinks", aka: ["life water","lifewater"] },
     "Propel": { category: "Drinks" },
     "Vitaminwater": { category: "Drinks", aka: ["vitamin water"] },
-    "Gold Peak tea": { category: "Drinks", aka: ["sweet tea"] },
+    "Gold Peak tea": { category: "Drinks" },
     "Topo Chico": { category: "Drinks" },
     "BodyArmor": { category: "Drinks", aka: ["body armor"] },
     "Powerade": { category: "Drinks" },

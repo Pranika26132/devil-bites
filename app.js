@@ -12,15 +12,6 @@
   }
 
   // ── Build one record per item, with all its price entries ──
-  const norm = (s) =>
-    (s || "")
-      .toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "")
-      .replace(/[’'`!.]/g, "")
-      .replace(/&/g, "")
-      .replace(/[^a-z0-9]+/g, " ")
-      .trim();
-
   const catalog = Object.entries(items).map(([name, info]) => ({
     name,
     category: info.category,
@@ -29,9 +20,9 @@
     energy: !!info.energy,
     highProtein: !!info.highProtein,
     healthy: !!info.healthy,
+    aka: info.aka || [],
     entries: [],
-    names: [name, ...(info.aka || [])].map(norm),
-    extra: "",
+    flavors: "",
   }));
   const byName = new Map(catalog.map((it) => [it.name, it]));
 
@@ -40,25 +31,18 @@
     if (!it) { console.warn("Devil Bites: price for unknown item", p.item); continue; }
     if (p.loc && !locations[p.loc]) console.warn("Devil Bites: unknown location", p.loc);
     it.entries.push(p);
-    it.extra += " " + norm(p.flavors);
+    if (p.flavors) it.flavors += " " + p.flavors;
   }
-  catalog.forEach((it) => (it.extra = it.extra.trim()));
 
-  // ── Search scoring (0 = no match) ──
-  function score(it, q) {
-    const qc = q.replace(/ /g, "");
-    let best = 0;
-    for (const n of it.names) {
-      if (n === q) return 100;
-      const nc = n.replace(/ /g, "");
-      if (n.startsWith(q) || nc.startsWith(qc)) best = Math.max(best, 80);
-      else if (n.split(" ").some((w) => w.startsWith(q))) best = Math.max(best, 60);
-      else if (qc.length > 2 && nc.includes(qc)) best = Math.max(best, 50);
-      else if (q.split(" ").every((t) => n.split(" ").some((w) => w.startsWith(t)))) best = Math.max(best, 40);
-    }
-    if (!best && q.length > 2 && q.split(" ").every((t) => it.extra.includes(t))) best = 10; // flavor match
-    return best;
-  }
+  // ── Search ──
+  // Names, brands and tags (data/tags.js, built from the price sheet) via search.js.
+  // score() → 3 exact name · 2 name/brand · 1 tag · 0 no match.
+  const TAGS = window.PACE_TAGS || { items: {}, synonyms: [] };
+  const searchIndex = window.PaceSearch.build(catalog.map((it) => ({
+    id: it.name, name: it.name, aka: it.aka, flavors: it.flavors,
+    brand: TAGS.items[it.name]?.brand, tags: TAGS.items[it.name]?.tags || [],
+  })), TAGS.synonyms);
+  const score = (it, q) => searchIndex.tier(it.name, q);
 
   // ── Formatting ──
   const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
@@ -198,12 +182,23 @@
   // ── Browse ──
   // Drinks / Snacks go by category; Energy / Protein / Healthy go by the item's
   // flags, so an item can be in two (Muscle Milk is a drink and high protein).
-  const FILTERS = ["All", "Drinks", "Snacks", "Energy", "Protein", "Healthy"];
+  const FILTERS = ["All", "Drinks", "Snacks", "Energy", "Protein", "Healthy", "Low calorie"];
+  // Low calorie comes from the tags (data/tags.js). "variants" items (Coke, Pepsi…)
+  // count only at spots where a diet / zero version was recorded.
+  const LOW_CAL_FLAVOR = new RegExp(TAGS.lowCalFlavor || "\\bdiet\\b|\\bzero\\b", "i");
+  catalog.forEach((it) => (it.lowCal = TAGS.items[it.name]?.lowCal || null));
+  const LOW_CAL_SCOPES = ["All", "Drinks", "Snacks"];
+  let lowCalScope = store.get("lowCalScope", "All");
+  if (!LOW_CAL_SCOPES.includes(lowCalScope)) lowCalScope = "All";
+
   const inFilter = (it, f) => f === "All" ? true
     : f === "Energy" ? !!it.energy
     : f === "Protein" ? !!it.highProtein
     : f === "Healthy" ? !!it.healthy
+    : f === "Low calorie" ? !!it.lowCal && (lowCalScope === "All" || it.category === lowCalScope)
     : it.category === f;
+  // The diet / zero flavors at one spot ("Diet Coke, Coke Zero"), or "" if none.
+  const lowCalFlavors = (e) => (e.flavors || "").split(",").map((s) => s.trim()).filter((s) => LOW_CAL_FLAVOR.test(s)).join(", ");
 
   // `only` sorts appear only with that chip selected.
   const SORTS = [
@@ -230,36 +225,47 @@
   const byNameNumeric = (a, b) => a.item.localeCompare(b.item, undefined, { numeric: true });
 
   function browseRows() {
-    const q = norm($q.value);
+    const q = $q.value.trim();
     const rows = [];
     for (const it of catalog) {
       if (!inFilter(it, filter)) continue;
       const s = q ? score(it, q) : 0;
       if (q && !s) continue;
-      for (const e of it.entries) rows.push({ ...e, it, match: s, mins: walkMins(e.loc) });
+      for (const e of it.entries) {
+        let lowLabel = "";
+        if (filter === "Low calorie" && it.lowCal === "variants") {
+          lowLabel = lowCalFlavors(e);
+          if (!lowLabel) continue; // this spot only has the regular version
+        }
+        rows.push({ ...e, it, match: s, mins: walkMins(e.loc), lowLabel });
+      }
     }
     const unpricedLast = (a, b) => (a.price == null) - (b.price == null);
     const noDistanceLast = (a, b) => (a.mins == null) - (b.mins == null);
 
     // Most caffeine / most protein / best value: items without the number go last.
     const missingLast = (f) => (a, b) => (f(a) == null) - (f(b) == null);
+    let bySort;
     if (sort === "caffeine") {
       const mg = (r) => mgOf(r.it);
-      rows.sort((a, b) => missingLast(mg)(a, b) || mg(b) - mg(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+      bySort = (a, b) => missingLast(mg)(a, b) || mg(b) - mg(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     } else if (sort === "protein") {
       const g = (r) => gOf(r.it);
-      rows.sort((a, b) => missingLast(g)(a, b) || g(b) - g(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+      bySort = (a, b) => missingLast(g)(a, b) || g(b) - g(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     } else if (sort === "value") {
       const v = (r) => (gOf(r.it) && r.price != null ? per20(r.price, gOf(r.it)) : null);
-      rows.sort((a, b) => missingLast(v)(a, b) || v(a) - v(b) || unpricedLast(a, b) || byNameNumeric(a, b));
+      bySort = (a, b) => missingLast(v)(a, b) || v(a) - v(b) || unpricedLast(a, b) || byNameNumeric(a, b);
     } else if (sort === "closest") {
-      rows.sort((a, b) => noDistanceLast(a, b) || a.mins - b.mins || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+      bySort = (a, b) => noDistanceLast(a, b) || a.mins - b.mins || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     } else if (sort === "price-desc") {
-      rows.sort((a, b) => unpricedLast(a, b) || b.price - a.price || byNameNumeric(a, b));
+      bySort = (a, b) => unpricedLast(a, b) || b.price - a.price || byNameNumeric(a, b);
     } else {
       // Price low to high (the default)
-      rows.sort((a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+      bySort = (a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     }
+    // While searching: exact name first, then name/brand, then tag matches;
+    // within each, the chosen sort (cheapest first by default).
+    rows.sort((a, b) => (q ? b.match - a.match : 0) || bySort(a, b));
     return rows;
   }
 
@@ -274,7 +280,8 @@
         <span class="card-main">
           <p class="place">${esc(r.item)}</p>
           <p class="where">${esc(where)}</p>
-          ${isBest || r.it.caffeine || r.it.protein ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${nutritionTags(r.it)}</span>` : ""}
+          ${isBest || r.it.caffeine || r.it.protein || r.lowLabel ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${
+            r.lowLabel ? `<span class="tag low">${esc(r.lowLabel)}</span>` : ""}${nutritionTags(r.it)}</span>` : ""}
         </span>
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
@@ -290,6 +297,14 @@
     $sorts.innerHTML = SORTS.filter((s) => !s.only || s.only === filter).map((s) =>
       `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === sort}" aria-label="${s.full}" title="${s.full}"${locating ? " disabled" : ""}>${s.label}</button>`).join("");
 
+    // Low calorie: small All / Drinks / Snacks toggle under the chips.
+    const $scope = $("lowcal-scope");
+    $scope.hidden = filter !== "Low calorie";
+    if (!$scope.hidden) {
+      $scope.innerHTML = LOW_CAL_SCOPES.map((s) =>
+        `<button type="button" class="scope" data-scope="${s}" aria-pressed="${s === lowCalScope}">${s}</button>`).join("");
+    }
+
     keepInView($filters);
     keepInView($sorts.parentElement);
 
@@ -303,7 +318,7 @@
 
     if (!rows.length && raw) {
       // Nothing here, but maybe in another category?
-      const elsewhere = filter !== "All" && catalog.some((it) => score(it, norm(raw)) > 0);
+      const elsewhere = filter !== "All" && catalog.some((it) => score(it, raw) > 0);
       $browseCount.textContent = "";
       $browseList.innerHTML = `
         <div class="empty"><strong>No prices for “${esc(raw)}”${filter !== "All" ? ` in ${filter}` : ""} yet.</strong><br>
@@ -345,6 +360,13 @@
   $filters.addEventListener("click", (e) => {
     const b = e.target.closest("[data-filter]");
     if (b) setFilter(b.dataset.filter);
+  });
+  $("lowcal-scope").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-scope]");
+    if (!b) return;
+    lowCalScope = b.dataset.scope;
+    store.set("lowCalScope", lowCalScope);
+    renderBrowse();
   });
   $sorts.addEventListener("click", (e) => {
     const b = e.target.closest("[data-sort]");

@@ -704,3 +704,25 @@ button:focus-visible, .chip:focus-visible, .tab:focus-visible {
 .save-line { margin: 4px 0 2px; color: var(--green); font-size: 14px; font-weight: 700; line-height: 1.35; }
 .credit-main { margin: 0 0 6px; font-size: 14px; color: var(--ink); }
 .credit-main a { color: var(--green); font-weight: 700; }
+
+/* ── Low calorie: All / Drinks / Snacks toggle and diet/zero label ── */
+.scope-row {
+  display: inline-flex;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 3px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+}
+.scope {
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  padding: 5px 14px;
+  font: 700 13.5px var(--body);
+  cursor: pointer;
+}
+.scope[aria-pressed="true"] { background: var(--green); color: var(--card); }
+.tag.low { background: var(--green-tint); color: var(--green); }
