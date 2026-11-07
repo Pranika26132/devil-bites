@@ -63,10 +63,13 @@
   <main class="view" id="view-caffeine" data-tab="caffeine" hidden>
     <header class="top">
       <p class="eyebrow">Caffeine</p>
-      <h1 class="title">The most caffeine for your points</h1>
+      <h1 class="title">Caffeine at the cheapest spot</h1>
     </header>
+    <div class="sort-row" role="group" aria-label="Sort">
+      <span class="sort-label">Sort</span>
+      <div class="sorts" id="caffeine-sorts"></div>
+    </div>
     <p class="count" id="caffeine-count"></p>
-    <p class="caf-note">Cost per 100mg at each item’s cheapest spot. Amounts are typical for the size shown; “~” marks an estimate.</p>
     <section class="cards" id="caffeine-list"></section>
   </main>
 
@@ -91,7 +94,6 @@
       </div>
       <div id="protein-combo" aria-live="polite"></div>
     </section>
-    <p class="footnote">Real prices at each item’s cheapest spot; protein from typical package labels.</p>
   </main>
 
   <main class="view" id="view-me" data-tab="me" hidden>

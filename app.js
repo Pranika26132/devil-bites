@@ -78,16 +78,12 @@
   }
 
   // ── Caffeine ──
-  // "200mg" or "75–110mg" (a range when the flavor isn't known); "~" marks an estimate.
-  const cafAmount = (c) => `${c.estimate ? "~" : ""}${c.mg}${c.max ? `–${c.max}` : ""}mg`;
-  const cafKind = (c) => (c.estimate ? "estimate" : "typical");
-  // Protein: typical grams from the package label.
-  const proTag = (p) => (p ? `<span class="tag pro">${p.g}g protein · typical</span>` : "");
+  // "200mg" or "75–110mg" (a range when the flavor isn't known).
+  const cafAmount = (c) => `${c.mg}${c.max ? `–${c.max}` : ""}mg`;
+  const cafTag = (c) => (c ? `<span class="tag caf">${cafAmount(c)} caffeine</span>` : "");
+  const proTag = (p) => (p ? `<span class="tag pro">${p.g}g protein</span>` : "");
   // Caffeine and protein tags for a card ("" if the item has neither).
   const nutritionTags = (it) => cafTag(it.caffeine) + proTag(it.protein);
-
-  const cafTag = (c, short = false) =>
-    (c ? `<span class="tag caf">${cafAmount(c)}${short ? "" : " caffeine"} · ${cafKind(c)}</span>` : "");
 
   // Splits an item's entries into the groups the comparison screen shows.
   function analyze(it) {
@@ -373,16 +369,16 @@
       ? `<p class="photo-credit"><a href="${esc(photo.source)}" target="_blank" rel="noopener">Photo: Open Food Facts</a></p>` : "";
     let html = `<div class="item-head">${thumb(it, true)}<div>
       <h1 class="item-name">${esc(it.name)}</h1>
-      ${n ? `<p class="count">${n} ${n === 1 ? "place" : "places"} ${isMeal ? "serve" : "sell"} this</p>`
+      ${n ? `<p class="count">${n} ${n === 1 ? "place" : "places"} ${isMeal ? "serve" : "sell"}${n === 1 ? "s" : ""} this</p>`
           : `<p class="count">Where it’s sold hasn’t been recorded yet</p>`}
       ${credit}</div></div>`;
     const c = it.caffeine;
     if (c) {
-      html += `<p class="caf-line"><strong>${cafAmount(c)} caffeine</strong> · ${cafKind(c)}${c.size ? ` for ${esc(c.size)}` : ""}${
+      html += `<p class="caf-line"><strong>${cafAmount(c)} caffeine</strong>${c.size ? ` in ${esc(c.size)}` : ""}${
         c.note ? `<br><span class="meta">${esc(c.note)}</span>` : ""}</p>`;
     }
     if (it.protein) {
-      html += `<p class="pro-line"><strong>${it.protein.g}g protein</strong> · typical per item</p>`;
+      html += `<p class="pro-line"><strong>${it.protein.g}g protein</strong></p>`;
     }
 
     if (a.priced.length || a.unpriced.length) {
@@ -475,48 +471,62 @@
   });
 
   // ── Caffeine ──
-  // Drinks and snacks ranked by cost per 100mg of caffeine at their cheapest spot.
-  // For a range (e.g. Frappuccino 75–110mg) the ranking uses the low end, so an
-  // item never looks like a better deal than it might be.
-  const per100 = (price, mg) => (price / mg) * 100;
+  // Energy drinks with a caffeine amount, at their cheapest spot (sodas, coffee
+  // and snacks with caffeine show it on their own pages but aren't listed here).
+  // Sorted by price (default) or by most caffeine.
+  const CAFFEINE_SORTS = [
+    { id: "price", label: "Price low to high" },
+    { id: "most",  label: "Most caffeine" },
+  ];
+  let caffeineSort = store.get("caffeineSort", "price");
+  if (!CAFFEINE_SORTS.some((s) => s.id === caffeineSort)) caffeineSort = "price";
+
   const caffeineList = catalog
-    .filter((it) => it.caffeine)
+    .filter((it) => it.caffeine && it.category === "Energy")
     .map((it) => {
       const { a } = itemFacts.get(it);
-      const c = it.caffeine;
-      return a.priced.length
-        ? { it, a, c, cost: per100(a.min, c.mg), best: c.max ? per100(a.min, c.max) : null }
-        : { it, a, c, cost: null };
-    })
-    .sort((x, y) => (x.cost == null) - (y.cost == null) || x.cost - y.cost || x.it.name.localeCompare(y.it.name));
+      return { it, a, c: it.caffeine, price: a.priced.length ? a.min : null };
+    });
 
-  function caffeineCard(r, rank) {
+  function sortedCaffeine() {
+    const byName = (x, y) => x.it.name.localeCompare(y.it.name, undefined, { numeric: true });
+    const list = caffeineList.filter((r) => r.price != null);
+    // For a range (Frappuccino 75–110mg) "most" uses the high end.
+    if (caffeineSort === "most") list.sort((x, y) => (y.c.max || y.c.mg) - (x.c.max || x.c.mg) || x.price - y.price || byName(x, y));
+    else list.sort((x, y) => x.price - y.price || byName(x, y));
+    return list;
+  }
+
+  function caffeineCard(r, first) {
     const { it, a, c } = r;
-    const priced = r.cost != null;
-    const costText = !priced ? "No price yet"
-      : r.best ? `$${r.best.toFixed(2)}–${r.cost.toFixed(2)}` : `$${r.cost.toFixed(2)}`;
+    const priced = r.price != null;
     return `
-      <button type="button" class="card row caf-card${priced ? "" : " unpriced"}" data-item="${esc(it.name)}">
-        ${priced ? `<span class="rank">${rank}</span>` : ""}
+      <button type="button" class="card row caf-card${first ? " best" : ""}${priced ? "" : " unpriced"}" data-item="${esc(it.name)}">
         ${thumb(it)}
         <span class="card-main">
           <p class="place">${esc(it.name)}</p>
-          <p class="where">${priced ? `${esc(spotList(a.priced, a.min))} · $${a.min.toFixed(2)}` : "Price not confirmed yet"}</p>
-          <span class="tags">${cafTag(c, true)}${c.size ? `<span class="tag size">${esc(c.size)}</span>` : ""}</span>
+          <p class="where${priced ? " pro-spot" : ""}">${priced ? esc(spotList(a.priced, a.min)) : "Price not confirmed yet"}</p>
+          <span class="tags">${cafTag(c)}${c.size ? `<span class="tag size">${esc(c.size)}</span>` : ""}</span>
         </span>
-        <span class="price-col">
-          <span class="price">${costText}</span>
-          ${priced ? `<span class="per">per 100mg</span>` : ""}
-        </span>
+        <span class="price">${priced ? `$${r.price.toFixed(2)}` : "No price yet"}</span>
       </button>`;
   }
 
   function renderCaffeine() {
-    const priced = caffeineList.filter((r) => r.cost != null), unpriced = caffeineList.filter((r) => r.cost == null);
-    $("caffeine-count").textContent = `${priced.length} drinks and snacks, cheapest caffeine first`;
-    $("caffeine-list").innerHTML = priced.map((r, i) => caffeineCard(r, i + 1)).join("")
+    $("caffeine-sorts").innerHTML = CAFFEINE_SORTS.map((s) =>
+      `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === caffeineSort}">${s.label}</button>`).join("");
+    const list = sortedCaffeine(), unpriced = caffeineList.filter((r) => r.price == null);
+    $("caffeine-count").textContent = `${list.length} energy drinks at their cheapest spot`;
+    $("caffeine-list").innerHTML = list.map((r, i) => caffeineCard(r, i === 0)).join("")
       + (unpriced.length ? `<p class="section-label">No price yet (${unpriced.length})</p>` + unpriced.map((r) => caffeineCard(r)).join("") : "");
   }
+  $("caffeine-sorts").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-sort]");
+    if (!b) return;
+    caffeineSort = b.dataset.sort;
+    store.set("caffeineSort", caffeineSort);
+    renderCaffeine();
+  });
   $("caffeine-list").addEventListener("click", (e) => {
     const b = e.target.closest("[data-item]");
     if (b) location.hash = "#/caffeine/item/" + encodeURIComponent(b.dataset.item);

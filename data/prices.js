@@ -33,7 +33,7 @@ window.PACE_DATA = {
   items: {
 
     // Drinks
-    "Bubbl’r sparkling water": { category: "Drinks", aka: ["bubblr","bubbler","bubbl r"] },
+    "Bubbl’r sparkling water": { category: "Energy", aka: ["bubblr","bubbler","bubbl r"], caffeine: { mg: 69, size: "12 oz" } },
     "Coca-Cola / Diet Coke": { category: "Drinks", aka: ["coke","diet coke","coca cola"], caffeine: { mg: 57, max: 77, size: "20 oz", estimate: true, note: "Coca-Cola 57mg, Diet Coke 77mg" } },
     "Soda cans, 12 oz": { category: "Drinks", aka: ["coke can","sprite can","mello yello"] },
     "Sprite": { category: "Drinks" },
