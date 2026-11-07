@@ -18,6 +18,7 @@
     name,
     category: info.category,
     caffeine: info.caffeine || null,
+    protein: info.protein || null,
     entries: [],
     names: [name, ...(info.aka || [])].map(norm),
     extra: "",
@@ -80,6 +81,11 @@
   // "200mg" or "75–110mg" (a range when the flavor isn't known); "~" marks an estimate.
   const cafAmount = (c) => `${c.estimate ? "~" : ""}${c.mg}${c.max ? `–${c.max}` : ""}mg`;
   const cafKind = (c) => (c.estimate ? "estimate" : "typical");
+  // Protein: typical grams from the package label.
+  const proTag = (p) => (p ? `<span class="tag pro">${p.g}g protein · typical</span>` : "");
+  // Caffeine and protein tags for a card ("" if the item has neither).
+  const nutritionTags = (it) => cafTag(it.caffeine) + proTag(it.protein);
+
   const cafTag = (c, short = false) =>
     (c ? `<span class="tag caf">${cafAmount(c)}${short ? "" : " caffeine"} · ${cafKind(c)}</span>` : "");
 
@@ -240,7 +246,7 @@
         <span class="card-main">
           <p class="place">${esc(r.item)}</p>
           <p class="where">${esc(where)}</p>
-          ${isBest || r.it.caffeine ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${cafTag(r.it.caffeine)}</span>` : ""}
+          ${isBest || r.it.caffeine || r.it.protein ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${nutritionTags(r.it)}</span>` : ""}
         </span>
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
@@ -375,6 +381,9 @@
       html += `<p class="caf-line"><strong>${cafAmount(c)} caffeine</strong> · ${cafKind(c)}${c.size ? ` for ${esc(c.size)}` : ""}${
         c.note ? `<br><span class="meta">${esc(c.note)}</span>` : ""}</p>`;
     }
+    if (it.protein) {
+      html += `<p class="pro-line"><strong>${it.protein.g}g protein</strong> · typical per item</p>`;
+    }
 
     if (a.priced.length || a.unpriced.length) {
       html += `<div class="cards">`;
@@ -435,7 +444,7 @@
           <span class="card-main">
             <p class="place">${esc(it.name)}</p>
             <p class="where">${d.places} places sell this</p>
-            ${it.caffeine ? `<span class="tags">${cafTag(it.caffeine)}</span>` : ""}
+            ${it.caffeine || it.protein ? `<span class="tags">${nutritionTags(it)}</span>` : ""}
           </span>
           ${save ? `<span class="save">Save $${d.gap.toFixed(2)}</span>` : ""}
         </span>
@@ -512,6 +521,120 @@
     const b = e.target.closest("[data-item]");
     if (b) location.hash = "#/caffeine/item/" + encodeURIComponent(b.dataset.item);
   });
+
+  // ── Protein ──
+  // Every item with a protein amount, at its cheapest spot.
+  const MAX_EACH = 2; // the goal combo uses at most this many of the same item
+  const PROTEIN_SORTS = [
+    { id: "price", label: "Price low to high" },
+    { id: "most",  label: "Most protein" },
+    { id: "value", label: "Best value" },
+  ];
+  let proteinSort = store.get("proteinSort", "price");
+  if (!PROTEIN_SORTS.some((s) => s.id === proteinSort)) proteinSort = "price";
+
+  const per20 = (price, g) => (price / g) * 20;
+  const proteinItems = catalog
+    .filter((it) => it.protein && itemFacts.get(it).a.priced.length)
+    .map((it) => {
+      const { a } = itemFacts.get(it);
+      return { it, a, g: it.protein.g, price: a.min, value: per20(a.min, it.protein.g) };
+    });
+  const byItem = (x, y) => x.it.name.localeCompare(y.it.name);
+
+  function sortedProtein() {
+    const list = [...proteinItems];
+    if (proteinSort === "most") list.sort((x, y) => y.g - x.g || x.price - y.price || byItem(x, y));
+    else if (proteinSort === "value") list.sort((x, y) => x.value - y.value || byItem(x, y));
+    else list.sort((x, y) => x.price - y.price || byItem(x, y));
+    return list;
+  }
+
+  function proteinCard(r, first) {
+    return `
+      <button type="button" class="card row pro-card${first ? " best" : ""}" data-item="${esc(r.it.name)}">
+        ${thumb(r.it)}
+        <span class="card-main">
+          <p class="place">${esc(r.it.name)}</p>
+          <p class="where pro-spot">${esc(spotList(r.a.priced, r.price))}</p>
+          <span class="tags">${proTag(r.it.protein)}</span>
+        </span>
+        <span class="price-col">
+          <span class="price">$${r.price.toFixed(2)}</span>
+          <span class="per">$${r.value.toFixed(2)} per 20g</span>
+        </span>
+      </button>`;
+  }
+
+  // Cheapest combo reaching at least `goal` grams, using up to MAX_EACH of each
+  // item. Small 0/1 knapsack over grams (capped at the goal).
+  function cheapestCombo(goal) {
+    const units = proteinItems.flatMap((r) => Array.from({ length: MAX_EACH }, () => r));
+    const best = new Array(goal + 1).fill(null); // best[g] = { cost, picks: [index…] }
+    best[0] = { cost: 0, picks: [] };
+    units.forEach((u, i) => {
+      for (let g = goal; g >= 0; g--) {
+        if (!best[g]) continue;
+        const ng = Math.min(goal, g + u.g);
+        const cost = best[g].cost + u.price;
+        const cur = best[ng];
+        if (!cur || cost < cur.cost - 1e-9 || (Math.abs(cost - cur.cost) < 1e-9 && best[g].picks.length + 1 < cur.picks.length)) {
+          best[ng] = { cost, picks: [...best[g].picks, i] };
+        }
+      }
+    });
+    const hit = best[goal];
+    if (!hit) return null;
+    const counts = new Map();
+    for (const i of hit.picks) counts.set(units[i], (counts.get(units[i]) || 0) + 1);
+    const lines = [...counts].map(([r, n]) => ({ r, n })).sort((x, y) => y.n * y.r.g - x.n * x.r.g);
+    return { cost: hit.cost, grams: lines.reduce((s, l) => s + l.n * l.r.g, 0), lines };
+  }
+
+  function renderProteinGoal() {
+    const raw = parseInt($("protein-goal").value, 10);
+    const $out = $("protein-combo");
+    if (!Number.isFinite(raw) || raw < 1) { $out.innerHTML = `<p class="goal-note">Enter how many grams you want.</p>`; return; }
+    const goal = Math.min(raw, 400);
+    const maxG = proteinItems.reduce((s, r) => s + r.g * MAX_EACH, 0);
+    const combo = goal <= maxG ? cheapestCombo(goal) : null;
+    if (!combo) {
+      $out.innerHTML = `<p class="goal-note">That’s more than ${MAX_EACH} of every protein item adds up to (${maxG}g).</p>`;
+      return;
+    }
+    $out.innerHTML = `
+      <p class="goal-total">${combo.grams}g for ${dollars(combo.cost)}</p>
+      <ul class="goal-list">
+        ${combo.lines.map(({ r, n }) => `<li>
+          <span>${n > 1 ? `${n} × ` : ""}${esc(r.it.name)} <span class="goal-g">${r.g * n}g</span></span>
+          <span class="goal-where">${esc(spotList(r.a.priced, r.price))} · ${dollars(r.price * n)}</span>
+        </li>`).join("")}
+      </ul>`;
+  }
+
+  function renderProtein() {
+    $("protein-sorts").innerHTML = PROTEIN_SORTS.map((s) =>
+      `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === proteinSort}">${s.label}</button>`).join("");
+    keepInView($("protein-sorts").parentElement);
+    $("protein-count").textContent = proteinSort === "value"
+      ? `${proteinItems.length} protein snacks, cheapest per 20g first`
+      : `${proteinItems.length} protein snacks at their cheapest spot`;
+    $("protein-list").innerHTML = sortedProtein().map((r, i) => proteinCard(r, i === 0)).join("");
+  }
+
+  $("protein-sorts").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-sort]");
+    if (!b) return;
+    proteinSort = b.dataset.sort;
+    store.set("proteinSort", proteinSort);
+    renderProtein();
+  });
+  $("protein-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-item]");
+    if (b) location.hash = "#/protein/item/" + encodeURIComponent(b.dataset.item);
+  });
+  $("protein-goal").value = store.get("proteinGoal", "40");
+  $("protein-goal").addEventListener("input", (e) => { store.set("proteinGoal", e.target.value); renderProteinGoal(); });
 
   // ── My Pace ──
   // Daily budget = balance ÷ days left on campus (today through the last day,
@@ -600,9 +723,17 @@
     const counts = (d) => !away.has(iso(d)) && !(weekdaysOnly && isWeekend(d));
     let nextDay = null;
     for (let d = addDays(t, 1); d <= last; d = addDays(d, 1)) if (counts(d)) { nextDay = d; break; }
+    // Catch up in 2 weeks: the per-day spend that brings the balance back to
+    // Duke's expected track 14 days from now. Only when 14+ days are left.
+    let catchUp = null;
+    const horizon = addDays(t, 14);
+    if (plan && horizon <= last) {
+      const n14 = campusDays(t, addDays(t, 13), away, weekdaysOnly);
+      if (n14) catchUp = (balance - expectedBalance(plan, horizon)) / n14;
+    }
     return {
       ...base, ready: true, left, awayInRange: allDays - left,
-      daily, nextDay,
+      daily, nextDay, catchUp,
       dailyNoAway: allDays ? balance / allDays : null,
       notCountedToday: !counts(t),
       diff: expected != null ? balance - expected : null,
@@ -657,6 +788,11 @@
           : d < 0 ? `You’re $${(-d).toLocaleString("en-US")} behind` : "You’re right on pace";
         $s.className = "pace-status " + (d > 0 ? "ahead" : d < 0 ? "behind" : "on");
       }
+      // One line when behind, if catching up in 2 weeks is possible.
+      const $c = $("pace-catchup");
+      const behind = p.balance != null && Math.round(p.balance - p.expected) < 0;
+      $c.hidden = !(behind && p.ready && p.catchUp > 0);
+      if (!$c.hidden) $c.innerHTML = `To catch up in 2 weeks, spend <strong>${dollars(p.catchUp)} a ${dayWord}</strong>.`;
     }
 
     $("pace-daily").classList.toggle("is-empty", !p.ready || p.daily == null);
@@ -726,7 +862,7 @@
   //   #/browse  #/item/<name>  #/deals  #/deals/item/<name>
   //   #/caffeine  #/caffeine/item/<name>  #/protein  #/me
   // An item opened from Deals lives under #/deals/… so the Deals tab stays lit (same for Caffeine).
-  const TAB_NAMES = { browse: "Browse", deals: "Deals", caffeine: "Caffeine" };
+  const TAB_NAMES = { browse: "Browse", deals: "Deals", caffeine: "Caffeine", protein: "Protein" };
   const views = [...document.querySelectorAll(".view")];
   const scrollMemory = {};   // list screen -> scroll position
   let current = null;        // "browse", "deals", "item", …
@@ -738,7 +874,7 @@
   function route() {
     const h = location.hash.replace(/^#\/?/, "");
     let view = "browse", tab = "browse";
-    const m = h.match(/^(?:(deals|caffeine)\/)?item\/(.+)$/);
+    const m = h.match(/^(?:(deals|caffeine|protein)\/)?item\/(.+)$/);
     if (m) {
       const it = byName.get(decodeURIComponent(m[2]));
       if (it) {
@@ -782,6 +918,8 @@
   renderBrowse();
   renderDeals();
   renderCaffeine();
+  renderProtein();
+  renderProteinGoal();
   renderPace();
   route();
 })();

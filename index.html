@@ -75,10 +75,23 @@
       <p class="eyebrow">Protein</p>
       <h1 class="title">The most protein for your points</h1>
     </header>
-    <div class="soon">
-      <span class="tag">Coming soon</span>
-      <p>Every protein snack ranked by what 20 grams of protein really costs, at the cheapest spot on campus.</p>
+    <div class="sort-row" role="group" aria-label="Sort">
+      <span class="sort-label">Sort</span>
+      <div class="sorts" id="protein-sorts"></div>
     </div>
+    <p class="count" id="protein-count"></p>
+    <section class="cards" id="protein-list"></section>
+
+    <!-- Hit your protein goal (deck page 10) -->
+    <section class="tip goal">
+      <label class="goal-label" for="protein-goal">Hit your protein goal</label>
+      <div class="goal-input">
+        <input id="protein-goal" type="number" inputmode="numeric" min="1" max="400" step="1" value="40" aria-describedby="goal-unit">
+        <span id="goal-unit">grams</span>
+      </div>
+      <div id="protein-combo" aria-live="polite"></div>
+    </section>
+    <p class="footnote">Real prices at each item’s cheapest spot; protein from typical package labels.</p>
   </main>
 
   <main class="view" id="view-me" data-tab="me" hidden>
@@ -96,6 +109,7 @@
       <div class="expected" id="pace-expected" hidden>
         <p class="expected-line">Expected today: <strong id="pace-exp-amt"></strong></p>
         <p class="pace-status" id="pace-status"></p>
+        <p class="catchup-line" id="pace-catchup" hidden></p>
       </div>
     </section>
 

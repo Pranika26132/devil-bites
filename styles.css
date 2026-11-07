@@ -492,6 +492,8 @@ img.thumb {
 .pace-status:not(.ahead):not(.behind):not(.on) { font: 600 14.5px var(--body); }
 .pace-status.ahead, .pace-status.on { color: var(--green); }
 .pace-status.behind { color: #C9651C; }
+.catchup-line { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: var(--muted); }
+.catchup-line strong { color: var(--ink); }
 .day.weekend { display: grid; place-items: center; color: #C9C3B3; }
 
 .away-title { margin: 0 0 2px; font-weight: 800; font-size: 17px; }
@@ -536,6 +538,53 @@ button.day:hover { background: var(--cream); }
   color: var(--card);
 }
 #pace-new-sub { color: #BFE3CC; }
+
+/* ── Protein ──────────────────────────────────────────────── */
+.tag.pro { background: var(--card); color: var(--green); box-shadow: inset 0 0 0 1.5px #BFD9C8; }
+.pro-line { margin: -4px 0 14px 2px; font-size: 15px; color: var(--muted); }
+.pro-line strong { color: var(--green); }
+.pro-card.best { border: 2.5px solid var(--green); padding: 13px 15px; }
+.pro-spot { color: var(--green) !important; font-weight: 700; }
+.pro-card .price { font-size: 20px; }
+
+.goal { margin-top: 22px; }
+.footnote { margin: 12px 2px 0; color: var(--muted); font-size: 13px; }
+.goal-label { display: block; color: var(--orange); font-weight: 800; font-size: 16px; margin-bottom: 10px; }
+.goal-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 253, 248, .08);
+  border: 1.5px solid rgba(255, 253, 248, .25);
+}
+.goal-input:focus-within { border-color: var(--orange); }
+.goal-input input {
+  width: 64px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--card);
+  font: 700 22px var(--head);
+}
+.goal-input span { color: #BFE3CC; font-weight: 700; }
+#protein-combo { margin-top: 16px; }
+.goal-total { margin: 0 0 10px; font-family: var(--head); font-weight: 700; font-size: 30px; line-height: 1.1; }
+.goal-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.goal-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 253, 248, .15);
+  font-size: 15px;
+}
+.goal-g { color: #BFE3CC; font-weight: 700; margin-left: 4px; }
+.goal-where { color: #D9D4C7; }
+.goal-note { margin: 0; color: #D9D4C7; font-size: 15px; }
 
 /* ── Deals ────────────────────────────────────────────────── */
 .deal {
