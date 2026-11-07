@@ -1,6 +1,6 @@
 // Rebuilds data/prices.js from the price sheet.
 //
-//   node tools/build-prices.mjs                       uses "data/prices - Sheet1.tsv"
+//   node tools/build-prices.mjs                       uses data/prices.csv (or "prices - Sheet1.csv", or a .tsv)
 //   node tools/build-prices.mjs path/to/sheet.tsv     (or a .csv)
 //
 // Cleanup rules:
@@ -20,7 +20,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "data", "prices.js");
-const SHEET = path.resolve(process.argv[2] || path.join(ROOT, "data", "prices - Sheet1.tsv"));
+// Default sheet: the first of these that exists in data/.
+const DEFAULT_SHEETS = ["prices.csv", "prices - Sheet1.csv", "prices.tsv", "prices - Sheet1.tsv"];
+const SHEET = path.resolve(process.argv[2]
+  || path.join(ROOT, "data", DEFAULT_SHEETS.find((f) => fs.existsSync(path.join(ROOT, "data", f))) || DEFAULT_SHEETS[0]));
 
 // ── Location spellings → location id (ids are defined in data/prices.js) ──
 const LOCATIONS = {
@@ -226,6 +229,35 @@ const NAMES = {
   "orbit gum 14 piece": "Orbit gum, 14 pieces",
 
   "chickpea stew": "Chickpea stew",
+
+  // Added Nov 7 (second sheet): sizes in names, Bella Union drinks and snacks.
+  "red bull 8.4oz": "Red Bull 8.4 oz",
+  "red bull 12oz": "Red Bull 12 oz",
+  "red bull 16oz": "Red Bull 16 oz",
+  "red bull 20oz": "Red Bull 20 oz",
+  "pepsi 20oz": "Pepsi",
+  "mountain dew 20oz": "Mountain Dew",
+  "sunkist 20z": "Sunkist",
+  "schweppes ginger ale 20z": "Schweppes Ginger Ale",
+  "orange juice 15oz": "Orange juice",
+  "ocean spray juice cranberry 15oz": "Ocean Spray juice",
+  "dole apple juice 15oz": "Dole apple juice",
+  "coke": "Coca-Cola / Diet Coke",
+  "diet coke": "Coca-Cola / Diet Coke",
+  "coke zero": "Coca-Cola / Diet Coke",
+  "diet dr. pepper": "Dr Pepper",
+  "spire zero": "Sprite",
+  "dasamo water": "Dasani water",
+  "powderade": "Powerade",
+  "boomchickapop popcorn (big)": "BOOMCHICKAPOP popcorn",
+  "lesserevil popcorn (big)": "LesserEvil popcorn",
+  "skinnypop popcorn (big)": "SkinnyPop popcorn",
+  "quiona cups": "Quinoa cup",
+  "cheese stick": "Cheese stick",
+  "brownie brittle": "Brownie Brittle",
+  "toblerone": "Toblerone",
+  "jelly belly jelly beans": "Jelly Belly jelly beans",
+  "lindt truffles (single)": "Lindt truffle (single)",
 };
 
 // Flavors that only appear in the sheet's item name ("Sour Skittles" → Sour).
@@ -242,7 +274,30 @@ const FLAVOR_FROM_NAME = {
   "lance captain’s wafers grilled cheese sandwich crackers": "Grilled Cheese",
   "lay’s barbecue": "Barbecue",
   "vitaminwater zero sugar ice": "Zero Sugar Ice",
+  "coke": "Coca-Cola",
+  "diet coke": "Diet Coke",
+  "coke zero": "Coke Zero",
+  "diet dr. pepper": "Diet Dr Pepper",
+  "spire zero": "Sprite Zero",
 };
+
+// Name patterns checked before NAMES. `at` limits a rule to one place.
+// Bella Union's $3.59 gummy bags are the big peg bags, so they're kept apart from
+// the small vending packs of the same brand (a different size).
+const PATTERNS = [
+  { re: /^haribo (.+)$/i, at: "bellaUnion", name: "Haribo gummies, peg bag" },
+  { re: /^trolli (.+)$/i, at: "bellaUnion", name: "Trolli gummies, peg bag" },
+  { re: /^warheads (.+)$/i, at: "bellaUnion", name: "Warheads, peg bag" },
+  { re: /^dirty deli style potato chips\s*[–-]\s*(.+)$/i, name: "Dirty potato chips" },
+];
+
+// Sizes that only appear in the sheet's item name ("Orange Juice 15oz", "(big)").
+function sizeFromName(item) {
+  const m = item.match(/(\d+(?:\.\d+)?)\s*o?z\b/i);
+  if (m) return `${m[1]} oz`;
+  if (/\(big\)/i.test(item)) return "Big";
+  return null;
+}
 
 // Items that aren't in data/prices.js yet: category (+ aka / caffeine / protein).
 const NEW_ITEMS = {
@@ -273,6 +328,16 @@ const NEW_ITEMS = {
   "BarkTHINS snacking chocolate":    { category: "Sweets" },
   "Trident gum, 28-pack":            { category: "Sweets" },
   "Orbit gum, 14 pieces":            { category: "Sweets" },
+  "Haribo gummies, peg bag":         { category: "Sweets", aka: ["haribo", "gummy bears", "goldbears"] },
+  "Trolli gummies, peg bag":         { category: "Sweets", aka: ["trolli", "sour crawlers"] },
+  "Warheads, peg bag":               { category: "Sweets", aka: ["warheads", "sour candy"] },
+  "Dirty potato chips":              { category: "Snacks", aka: ["dirty chips", "chips"] },
+  "Quinoa cup":                      { category: "Meals", aka: ["quinoa"] },
+  "Cheese stick":                    { category: "Protein", aka: ["string cheese"] },
+  "Brownie Brittle":                 { category: "Sweets" },
+  "Toblerone":                       { category: "Sweets" },
+  "Jelly Belly jelly beans":         { category: "Sweets", aka: ["jelly beans"] },
+  "Lindt truffle (single)":          { category: "Sweets", aka: ["lindor"] },
 };
 
 // ── helpers ──
@@ -358,16 +423,19 @@ const built = new Map(); // item|loc|price -> entry
 for (const r of sheet) {
   const locId = r.loc ? LOCATIONS[key(r.loc)] : null;
   if (r.loc && !locId) { problems.push(`Line ${r.line}: unknown location “${r.loc}” (${r.item}); left out`); continue; }
-  const rule = NAMES[key(r.item)];
+  if (!r.item) { problems.push(`Line ${r.line}: no item name (${r.loc || "no place"}${r.price != null ? `, $${r.price}` : ""}); left out`); continue; }
+  const pat = PATTERNS.find((p) => p.re.test(r.item.trim()) && (!p.at || p.at === locId));
+  const rule = pat ? pat.name : NAMES[key(r.item)];
   const name = typeof rule === "function" ? rule(r) : rule;
   if (!name) { problems.push(`Line ${r.line}: don’t know which item “${r.item}”${r.size ? ` (${r.size})` : ""} is; left out`); continue; }
+  if (pat) r.patFlavor = r.item.trim().match(pat.re)[1].trim();
   if (r.price != null && !(r.price >= 0)) { problems.push(`Line ${r.line}: price “${r.price}” isn’t a number; left blank`); r.price = null; }
   const k = `${name}|${locId}|${r.price}`;
   const prev = built.get(k);
-  const fromName = FLAVOR_FROM_NAME[key(r.item)];
+  const fromName = cleanFlavors(r.patFlavor || FLAVOR_FROM_NAME[key(r.item)] || "");
   const sheetFlavors = cleanFlavors(r.flavor);
   const flavors = fromName && sheetFlavors ? `${fromName} ${sheetFlavors}` : fromName || sheetFlavors;
-  const size = cleanSize(r.size);
+  const size = cleanSize(r.size) || sizeFromName(r.item);
   if (prev) {
     // Same item, place and price: merge flavors, keep the latest date.
     if (flavors) prev.flavors = cleanFlavors([prev.flavors, flavors].filter(Boolean).join(";").replace(/, /g, ";"));
@@ -427,9 +495,9 @@ const priceLine = (e) => {
 };
 
 let out = `/*
-  Pace price data — student price checks, Oct–Nov 2026.
+  Devil Bites price data — student price checks, Oct–Nov 2026.
 
-  BUILT FROM THE PRICE SHEET: edit "data/prices - Sheet1.tsv", then run
+  BUILT FROM THE PRICE SHEET: edit "data/${path.basename(SHEET)}", then run
       node tools/build-prices.mjs
   Prices, places, sizes, flavors and dates come from the sheet.
   Item details (category, other spellings, caffeine, protein) are kept from this

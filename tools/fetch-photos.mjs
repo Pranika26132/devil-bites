@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const IMAGES = path.join(ROOT, "images");
 const PHOTOS_JS = path.join(ROOT, "data", "photos.js");
 const REPORT = path.join(ROOT, "photo-report.md");
-const UA = "PaceStudentApp/0.1 (Duke student price-comparison project)";
+const UA = "DevilBitesStudentApp/0.1 (Duke student price-comparison project)";
 const SEARCH = "https://search.openfoodfacts.org/search";
 const DELAY_MS = 2000; // be gentle with a free API
 

@@ -3,6 +3,13 @@
 
   const { locations, items, prices } = window.PACE_DATA;
   const WEEKS_PER_SEMESTER = 15;
+  // Where "Tell us." in the footer links to (a form or a mailto: link).
+  // Leave empty to show it as plain text.
+  const FEEDBACK_URL = "";
+  if (FEEDBACK_URL) {
+    const $t = document.getElementById("tell-us");
+    $t.outerHTML = `<a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Tell us.</a>`;
+  }
 
   // ── Build one record per item, with all its price entries ──
   const norm = (s) =>
@@ -27,8 +34,8 @@
 
   for (const p of prices) {
     const it = byName.get(p.item);
-    if (!it) { console.warn("Pace: price for unknown item", p.item); continue; }
-    if (p.loc && !locations[p.loc]) console.warn("Pace: unknown location", p.loc);
+    if (!it) { console.warn("Devil Bites: price for unknown item", p.item); continue; }
+    if (p.loc && !locations[p.loc]) console.warn("Devil Bites: unknown location", p.loc);
     it.entries.push(p);
     it.extra += " " + norm(p.flavors);
   }
@@ -169,7 +176,7 @@
       },
       (err) => {
         fallBack(err.code === err.PERMISSION_DENIED
-          ? "No problem! Without your location, Pace sorts by lowest price instead. You can turn location on for this site in your browser settings anytime."
+          ? "No problem! Without your location, Devil Bites sorts by lowest price instead. You can turn location on for this site in your browser settings anytime."
           : "Couldn’t find your location just now, so you’re seeing the lowest prices first. Try again in a moment.");
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
@@ -343,7 +350,7 @@
     return html ? `<p class="meta">${html}</p>` : "";
   }
 
-  function priceCard(e, isBest) {
+  function priceCard(e, isBest, saveLine = "") {
     const unpriced = e.price == null;
     const mins = walkMins(e.loc);
     return `
@@ -351,6 +358,7 @@
         <div class="card-main">
           <p class="place">${esc(locName(e.loc))}</p>
           ${isBest ? `<p class="best-label">Best price</p>` : ""}
+          ${isBest && saveLine ? `<p class="save-line">${esc(saveLine)}</p>` : ""}
           ${metaLine(e, unpriced ? "Price not confirmed yet" : "")}
         </div>
         <span class="price-col">
@@ -381,19 +389,22 @@
       html += `<p class="pro-line"><strong>${it.protein.g}g protein</strong></p>`;
     }
 
+    // Cheapest vs. most expensive spot, used for the "You save" line and the tip.
+    const cheap = joinNames([...new Set(a.priced.filter((e) => e.price === a.min).map((e) => locName(e.loc)))]);
+    const priceyNames = [...new Set(a.priced.filter((e) => e.price === a.max).map((e) => locName(e.loc)))];
+    const pricey = priceyNames.length > 1 && priceyNames.every((x) => / vending$/.test(x)) ? "vending"
+      : priceyNames.length > 2 ? "the other spots" : joinNames(priceyNames);
+    const diff = a.hasCompare ? a.max - a.min : 0;
+    const saveLine = a.hasCompare ? `You save $${diff.toFixed(2)} by buying here instead of ${pricey}.` : "";
+
     if (a.priced.length || a.unpriced.length) {
       html += `<div class="cards">`;
-      html += a.priced.map((e) => priceCard(e, a.hasCompare && e.price === a.min)).join("");
+      html += a.priced.map((e) => priceCard(e, a.hasCompare && e.price === a.min, saveLine)).join("");
       html += a.unpriced.map((e) => priceCard(e, false)).join("");
       html += `</div>`;
     }
 
     if (a.hasCompare) {
-      const cheap = joinNames([...new Set(a.priced.filter((e) => e.price === a.min).map((e) => locName(e.loc)))]);
-      const priceyNames = [...new Set(a.priced.filter((e) => e.price === a.max).map((e) => locName(e.loc)))];
-      const pricey = priceyNames.length > 1 && priceyNames.every((x) => / vending$/.test(x)) ? "vending"
-        : priceyNames.length > 2 ? "the other spots" : joinNames(priceyNames);
-      const diff = a.max - a.min;
       if (isMeal) {
         html += `<div class="tip"><p class="tip-title">You save about ${money(Math.round(diff))}</p>
                  <p>Getting it at ${esc(cheap)} instead of ${esc(pricey)}.</p></div>`;
@@ -414,7 +425,7 @@
       html += `</div>`;
     }
     $itemDetail.innerHTML = html;
-    document.title = `${it.name} · Pace`;
+    document.title = `${it.name} · Devil Bites`;
   }
 
   // ── Deals ──
@@ -461,7 +472,6 @@
 
   function renderDeals() {
     const gaps = deals.filter((d) => d.gap > 0), same = deals.filter((d) => d.gap === 0);
-    $("deals-count").textContent = `${gaps.length} items cost less somewhere else`;
     $("deals-list").innerHTML = gaps.map(dealCard).join("")
       + (same.length ? `<p class="section-label">Same price everywhere (${same.length})</p>` + same.map(dealCard).join("") : "");
   }
@@ -626,9 +636,6 @@
     $("protein-sorts").innerHTML = PROTEIN_SORTS.map((s) =>
       `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === proteinSort}">${s.label}</button>`).join("");
     keepInView($("protein-sorts").parentElement);
-    $("protein-count").textContent = proteinSort === "value"
-      ? `${proteinItems.length} protein snacks, cheapest per 20g first`
-      : `${proteinItems.length} protein snacks at their cheapest spot`;
     $("protein-list").innerHTML = sortedProtein().map((r, i) => proteinCard(r, i === 0)).join("");
   }
 
@@ -794,15 +801,20 @@
         $s.className = "pace-status";
       } else {
         const d = Math.round(p.balance - p.expected);
-        $s.textContent = d > 0 ? `You’re $${d.toLocaleString("en-US")} ahead`
-          : d < 0 ? `You’re $${(-d).toLocaleString("en-US")} behind` : "You’re right on pace";
+        $s.textContent = d > 0 ? `You’re $${d.toLocaleString("en-US")} ahead. Treat yourself.`
+          : d < 0 ? `You’re $${(-d).toLocaleString("en-US")} behind. Here’s an easy fix.` : "You’re right on pace";
         $s.className = "pace-status " + (d > 0 ? "ahead" : d < 0 ? "behind" : "on");
       }
-      // One line when behind, if catching up in 2 weeks is possible.
+      // The fix when behind: catch up in 2 weeks if that's possible, otherwise
+      // stick to the daily budget until the last day.
       const $c = $("pace-catchup");
       const behind = p.balance != null && Math.round(p.balance - p.expected) < 0;
-      $c.hidden = !(behind && p.ready && p.catchUp > 0);
-      if (!$c.hidden) $c.innerHTML = `To catch up in 2 weeks, spend <strong>${dollars(p.catchUp)} a ${dayWord}</strong>.`;
+      $c.hidden = !(behind && p.ready && p.daily != null);
+      if (!$c.hidden) {
+        $c.innerHTML = p.catchUp > 0
+          ? `To catch up in 2 weeks, spend <strong>${dollars(p.catchUp)} a ${dayWord}</strong>.`
+          : `Stick to <strong>${dollars(p.daily)} a ${dayWord}</strong> until you leave and you’ll make it.`;
+      }
     }
 
     $("pace-daily").classList.toggle("is-empty", !p.ready || p.daily == null);
@@ -903,7 +915,7 @@
     document.querySelectorAll(".tab").forEach((t) =>
       t.dataset.tab === tab ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"));
     $("back-label").textContent = TAB_NAMES[tab] || "Browse";
-    if (view !== "item") document.title = "Pace";
+    if (view !== "item") document.title = "Devil Bites";
 
     // Coming back to a list returns to where the user was in it.
     window.scrollTo(0, view === "item" ? 0 : scrollMemory[view] || 0);

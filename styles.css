@@ -698,3 +698,9 @@ button:focus-visible, .chip:focus-visible, .tab:focus-visible {
 @media (min-width: 760px) {
   .title, .item-name { font-size: 34px; }
 }
+
+/* ── Headers, savings line, footer ────────────────────────── */
+.subtitle { margin: 6px 0 0; color: var(--muted); font-size: 16px; line-height: 1.4; }
+.save-line { margin: 4px 0 2px; color: var(--green); font-size: 14px; font-weight: 700; line-height: 1.35; }
+.credit-main { margin: 0 0 6px; font-size: 14px; color: var(--ink); }
+.credit-main a { color: var(--green); font-weight: 700; }

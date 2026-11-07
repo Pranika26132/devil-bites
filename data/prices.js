@@ -1,7 +1,7 @@
 /*
-  Pace price data — student price checks, Oct–Nov 2026.
+  Devil Bites price data — student price checks, Oct–Nov 2026.
 
-  BUILT FROM THE PRICE SHEET: edit "data/prices - Sheet1.tsv", then run
+  BUILT FROM THE PRICE SHEET: edit "data/prices - Sheet1.csv", then run
       node tools/build-prices.mjs
   Prices, places, sizes, flavors and dates come from the sheet.
   Item details (category, other spellings, caffeine, protein) are kept from this
@@ -33,7 +33,6 @@ window.PACE_DATA = {
   items: {
 
     // Drinks
-    "Bubbl’r sparkling water": { category: "Energy", aka: ["bubblr","bubbler","bubbl r"], caffeine: { mg: 69, size: "12 oz" } },
     "Coca-Cola / Diet Coke": { category: "Drinks", aka: ["coke","diet coke","coca cola"], caffeine: { mg: 57, max: 77, size: "20 oz", estimate: true, note: "Coca-Cola 57mg, Diet Coke 77mg" } },
     "Soda cans, 12 oz": { category: "Drinks", aka: ["coke can","sprite can","mello yello"] },
     "Sprite": { category: "Drinks" },
@@ -45,8 +44,6 @@ window.PACE_DATA = {
     "Mountain Dew": { category: "Drinks", aka: ["mtn dew","code red"], caffeine: { mg: 91, size: "20 oz" } },
     "Sunkist": { category: "Drinks" },
     "Schweppes Ginger Ale": { category: "Drinks", aka: ["ginger ale"] },
-    "Root-beer-style soda (brand unread)": { category: "Drinks", aka: ["root beer"] },
-    "Red-label soda (brand unread)": { category: "Drinks" },
     "Ocean Spray juice": { category: "Drinks", aka: ["cranberry juice"] },
     "Dole apple juice": { category: "Drinks" },
     "Starbucks Frappuccino": { category: "Drinks", aka: ["frap","frappe"], caffeine: { mg: 75, max: 110, size: "13.7 oz", note: "Mocha 110mg, Caramel 90mg, Vanilla 75mg" } },
@@ -73,9 +70,9 @@ window.PACE_DATA = {
     "Orange juice": { category: "Drinks" },
     "Smartwater, large": { category: "Drinks", aka: ["smart water"] },
     "Smartwater, small": { category: "Drinks", aka: ["smart water"] },
-    "Soda (brand not recorded)": { category: "Drinks" },
 
     // Energy
+    "Bubbl’r sparkling water": { category: "Energy", aka: ["bubblr","bubbler","bubbl r"], caffeine: { mg: 69, size: "12 oz" } },
     "Red Bull 8.4 oz": { category: "Energy", aka: ["redbull"], caffeine: { mg: 80, size: "8.4 oz" } },
     "Red Bull 12 oz": { category: "Energy", aka: ["redbull"], caffeine: { mg: 114, size: "12 oz", estimate: true, note: "9.5mg per oz" } },
     "Red Bull 16 oz": { category: "Energy", aka: ["redbull"], caffeine: { mg: 152, size: "16 oz", estimate: true, note: "9.5mg per oz" } },
@@ -106,6 +103,7 @@ window.PACE_DATA = {
     "PowerBar": { category: "Protein" },
     "Beef jerky": { category: "Protein", aka: ["jerky"] },
     "Chobani yogurt cup": { category: "Protein", aka: ["greek yogurt"] },
+    "Cheese stick": { category: "Protein", aka: ["string cheese"] },
 
     // Snacks
     "Clif Bar": { category: "Snacks", aka: ["cliff bar"], protein: { g: 10 } },
@@ -135,10 +133,10 @@ window.PACE_DATA = {
     "Kar’s trail mix with M&M’s": { category: "Snacks", aka: ["trail mix"] },
     "Snack Factory Pretzel Crisps": { category: "Snacks", aka: ["pretzels"] },
     "BOOMCHICKAPOP popcorn": { category: "Snacks", aka: ["angie's","popcorn"] },
-    "Clif or Luna bar": { category: "Snacks", aka: ["luna bar"] },
     "LesserEvil popcorn": { category: "Snacks", aka: ["popcorn"] },
     "SkinnyPop popcorn": { category: "Snacks", aka: ["popcorn"] },
     "Blue Diamond almonds": { category: "Snacks", aka: ["nuts"] },
+    "Dirty potato chips": { category: "Snacks", aka: ["dirty chips","chips"] },
 
     // Sweets
     "Lance Nekot cookies": { category: "Sweets" },
@@ -197,23 +195,30 @@ window.PACE_DATA = {
     "Peg-bag candy (assorted)": { category: "Sweets" },
     "Snack Factory Chocolate Covered Pretzel Crisps": { category: "Sweets", aka: ["pretzels"] },
     "BarkTHINS snacking chocolate": { category: "Sweets" },
+    "Haribo gummies, peg bag": { category: "Sweets", aka: ["haribo","gummy bears","goldbears"] },
+    "Trolli gummies, peg bag": { category: "Sweets", aka: ["trolli","sour crawlers"] },
+    "Warheads, peg bag": { category: "Sweets", aka: ["warheads","sour candy"] },
+    "Brownie Brittle": { category: "Sweets" },
+    "Toblerone": { category: "Sweets" },
+    "Jelly Belly jelly beans": { category: "Sweets", aka: ["jelly beans"] },
+    "Lindt truffle (single)": { category: "Sweets", aka: ["lindor"] },
 
     // Meals
     "Kitchen & Love Quinoa Quick Cup": { category: "Meals", aka: ["quinoa"] },
+    "Quinoa cup": { category: "Meals", aka: ["quinoa"] },
   },
 
   prices: [
 
     // ── Drinks ──
-    { item: "Bubbl’r sparkling water", loc: "lobby", price: 1.99, flavors: "Varying flavors" },
-    { item: "Bubbl’r sparkling water", loc: "trinityVending", price: 3, flavors: "Tropical, Cherry" },
-    { item: "Bubbl’r sparkling water", loc: "wuVending", price: 3, flavors: "Cherry, Berry" },
-    { item: "Bubbl’r sparkling water", loc: "bcVending", price: 3, checked: "2026-11-03" },
     { item: "Coca-Cola / Diet Coke", loc: "lobby", price: 2.09, size: "20 oz", flavors: "Original, Diet" },
+    { item: "Coca-Cola / Diet Coke", loc: "bellaUnion", price: 2.19, flavors: "Diet Coke, Coca-Cola, Coke Zero" },
     { item: "Coca-Cola / Diet Coke", loc: "bcVending", price: 2.5, flavors: "Coca-Cola, Diet Coke", checked: "2026-11-03" },
     { item: "Soda cans, 12 oz", loc: "lobby", price: 2, size: "12 oz", flavors: "Coca-Cola, Mello Yello, Sprite, Dr Pepper" },
     { item: "Sprite", loc: "lobby", price: 2.09, size: "20 oz", flavors: "Sprite, Sprite Zero" },
+    { item: "Sprite", loc: "bellaUnion", price: 2.19, flavors: "Sprite Zero" },
     { item: "Dr Pepper", loc: "lobby", price: 2.09, size: "20 oz", flavors: "Dr Pepper, Diet Dr Pepper" },
+    { item: "Dr Pepper", loc: "bellaUnion", price: 2.19, flavors: "Diet Dr Pepper" },
     { item: "Dr Pepper", loc: "bcVending", price: 2.5, checked: "2026-11-03" },
     { item: "Fanta", loc: "lobby", price: 2.09, size: "20 oz", flavors: "Pineapple, Grape, Strawberry" },
     { item: "Minute Maid juice", loc: "lobby", price: 2.09, size: "20 oz" },
@@ -226,10 +231,8 @@ window.PACE_DATA = {
     { item: "Mountain Dew", loc: "bcVending", price: 2.5, flavors: "Regular, Diet", checked: "2026-11-03" },
     { item: "Sunkist", loc: "lobby", price: 2.19, size: "20 oz", flavors: "Grape" },
     { item: "Schweppes Ginger Ale", loc: "lobby", price: 2.19, size: "20 oz" },
-    { item: "Root-beer-style soda (brand unread)", loc: "lobby", price: 2.19, size: "20 oz", note: "Label wasn’t fully readable." },
-    { item: "Red-label soda (brand unread)", loc: "lobby", price: 2.19, size: "20 oz", note: "Label wasn’t fully readable." },
-    { item: "Ocean Spray juice", loc: "lobby", price: 2.29, flavors: "Cranberry" },
-    { item: "Dole apple juice", loc: "lobby", price: 2.29 },
+    { item: "Ocean Spray juice", loc: "lobby", price: 2.29, size: "15 oz", flavors: "Cranberry" },
+    { item: "Dole apple juice", loc: "lobby", price: 2.29, size: "15 oz" },
     { item: "Starbucks Frappuccino", loc: "bcVending", price: 4.25, checked: "2026-11-03" },
     { item: "Starbucks Frappuccino", loc: "lobby", price: 4.29, size: "13.7 oz", flavors: "Vanilla, Caramel, Mocha" },
     { item: "Lipton iced tea, 20 oz bottle", loc: "lobby", price: 2.09, size: "20 oz", flavors: "Green label" },
@@ -257,6 +260,7 @@ window.PACE_DATA = {
     { item: "Powerade", loc: "bcVending", price: 2.5, flavors: "Fruit Punch", checked: "2026-11-03" },
     { item: "Powerade Zero", loc: "wuVending", price: 2.75 },
     { item: "Dasani water", loc: "bellaUnion", price: 1.89, checked: "2026-11-07" },
+    { item: "Dasani water", loc: "bellaUnion", price: 2.19 },
     { item: "Dasani water", loc: "wuVending", price: 2.25 },
     { item: "Dasani water", loc: "bcVending", price: 2.25, checked: "2026-11-03" },
     { item: "Aquafina (plastic bottle)", loc: "bcVending", price: 2.25, checked: "2026-11-03" },
@@ -265,12 +269,15 @@ window.PACE_DATA = {
     { item: "Spindrift", loc: "wuCafe", price: 2.79, checked: "2026-11-04" },
     { item: "Kombucha", loc: "wuCafe", price: 6.59, checked: "2026-11-04" },
     { item: "Open Water", loc: "wuCafe", price: 2.79, size: "16 oz", checked: "2026-11-04" },
-    { item: "Orange juice", loc: "lobby", price: 2.29 },
+    { item: "Orange juice", loc: "lobby", price: 2.29, size: "15 oz" },
     { item: "Smartwater, large", loc: "bellaUnion", price: 4.19, size: "Large", checked: "2026-11-07" },
     { item: "Smartwater, small", loc: "bellaUnion", price: 2.19, size: "Small", checked: "2026-11-07" },
-    { item: "Soda (brand not recorded)", loc: "bellaUnion", price: 2.19, checked: "2026-11-07" },
 
     // ── Energy ──
+    { item: "Bubbl’r sparkling water", loc: "lobby", price: 1.99, flavors: "Varying flavors" },
+    { item: "Bubbl’r sparkling water", loc: "trinityVending", price: 3, flavors: "Tropical, Cherry" },
+    { item: "Bubbl’r sparkling water", loc: "wuVending", price: 3, flavors: "Cherry, Berry" },
+    { item: "Bubbl’r sparkling water", loc: "bcVending", price: 3, checked: "2026-11-03" },
     { item: "Red Bull 8.4 oz", loc: "lobby", price: 2.99, size: "8.4 oz" },
     { item: "Red Bull 12 oz", loc: "lobby", price: 3.69, size: "12 oz" },
     { item: "Red Bull 16 oz", loc: "lobby", price: 4.69, size: "16 oz" },
@@ -306,11 +313,13 @@ window.PACE_DATA = {
     { item: "PowerBar", loc: "bcVending", price: 3.25, checked: "2026-11-03" },
     { item: "Beef jerky", loc: "bcVending", price: 3.25, checked: "2026-11-03", note: "Brand unclear." },
     { item: "Chobani yogurt cup", loc: "bellaUnion", price: 1.89, checked: "2026-11-07" },
+    { item: "Cheese stick", loc: "lobby", price: 0.99 },
 
     // ── Snacks ──
     { item: "Clif Bar", loc: "lobby", price: 2.69, checked: "2026-11-04" },
     { item: "Clif Bar", loc: "wuVending", price: 3.25 },
     { item: "Clif Bar", loc: "bcVending", price: 3.25, checked: "2026-11-03" },
+    { item: "Clif Bar", loc: "bellaUnion", price: 3.29, flavors: "Assorted varieties", checked: "2026-11-07" },
     { item: "Kind bar", loc: "wuVending", price: 3.25 },
     { item: "Kind bar", loc: "bellaUnion", price: 3.29, flavors: "Assorted varieties", checked: "2026-11-07" },
     { item: "belVita breakfast biscuits", loc: "lobby", price: 1.49, checked: "2026-11-04" },
@@ -342,11 +351,11 @@ window.PACE_DATA = {
     { item: "Roasted pistachios", loc: "wuVending", price: 2, flavors: "Roasted" },
     { item: "Kar’s trail mix with M&M’s", loc: "wuVending", price: 2 },
     { item: "Snack Factory Pretzel Crisps", loc: "bellaUnion", price: 5.99, checked: "2026-11-07" },
-    { item: "BOOMCHICKAPOP popcorn", loc: "bellaUnion", price: 6.99, flavors: "Assorted varieties", checked: "2026-11-07" },
-    { item: "Clif or Luna bar", loc: "bellaUnion", price: 3.29, flavors: "Assorted varieties", checked: "2026-11-07" },
+    { item: "BOOMCHICKAPOP popcorn", loc: "bellaUnion", price: 6.99, size: "Big", flavors: "Assorted varieties", checked: "2026-11-07" },
     { item: "LesserEvil popcorn", loc: "bellaUnion", price: 6.29, size: "4.6 oz", flavors: "Homer’s Blend Garlic Parmesan, Oh My Ghee", checked: "2026-11-07" },
-    { item: "SkinnyPop popcorn", loc: "bellaUnion", price: 6.99, flavors: "Original, Aged white cheddar", checked: "2026-11-07" },
+    { item: "SkinnyPop popcorn", loc: "bellaUnion", price: 6.99, size: "Big", flavors: "Original, Aged white cheddar", checked: "2026-11-07" },
     { item: "Blue Diamond almonds", loc: "bellaUnion", price: 7.99, flavors: "Whole Natural, Smokehouse, Honey Roasted, Lime", checked: "2026-11-07" },
+    { item: "Dirty potato chips", loc: "bellaUnion", price: 2.29, flavors: "Sriracha Honey, Sour Cream & Onion, Salt & Vinegar, Sea Salt, Mesquite BBQ" },
 
     // ── Sweets ──
     { item: "Lance Nekot cookies", loc: "bcVending", price: 1.25, checked: "2026-11-03" },
@@ -415,8 +424,16 @@ window.PACE_DATA = {
     { item: "Peg-bag candy (assorted)", loc: "bellaUnion", price: 3.59, flavors: "Assorted", checked: "2026-11-07" },
     { item: "Snack Factory Chocolate Covered Pretzel Crisps", loc: "bellaUnion", price: 6.99, checked: "2026-11-07" },
     { item: "BarkTHINS snacking chocolate", loc: "bellaUnion", price: 6.99, size: "4.7 oz", flavors: "Dark chocolate almond & sea salt", checked: "2026-11-07" },
+    { item: "Haribo gummies, peg bag", loc: "bellaUnion", price: 3.59, flavors: "Goldbears, Goldbears Tropical, Goldbears Wild Berry, Unicornilicious, Ginger-Lemon, Dinosaurs, Fruit Salad, Happy Cherries, Frogs, Twin Snakes" },
+    { item: "Trolli gummies, peg bag", loc: "bellaUnion", price: 3.59, flavors: "Sour Brite Crawlers, Sour Bustin’ Crawlers, Sour Brite Squad, Sour Brite Crawlers Very Berry, Sour Brite Crawlers Tropical Punch, Electric Crawlers, Sour Glow Crawlers, Sour All Stars" },
+    { item: "Warheads, peg bag", loc: "bellaUnion", price: 3.59, flavors: "Sour Galactic Mix Cubes, Wedgies" },
+    { item: "Brownie Brittle", loc: "bellaUnion", price: 6.49 },
+    { item: "Toblerone", loc: "bellaUnion", price: 6.99 },
+    { item: "Jelly Belly jelly beans", loc: "bellaUnion", price: 3.79 },
+    { item: "Lindt truffle (single)", loc: "bellaUnion", price: 0.99 },
 
     // ── Meals ──
     { item: "Kitchen & Love Quinoa Quick Cup", loc: "bellaUnion", price: 5.99, size: "7.9 oz", flavors: "Artichoke & roasted pepper", checked: "2026-11-07" },
+    { item: "Quinoa cup", loc: "bellaUnion", price: 5.39 },
   ],
 };
