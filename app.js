@@ -66,8 +66,16 @@
   const joinNames = (arr) => arr.length <= 2 ? arr.join(" or ") : `${arr.slice(0, -1).join(", ")} or ${arr.at(-1)}`;
 
   // ── Photos ──
-  // Only approved photos ("ok") are shown; see data/photos.js and photo-report.md.
-  const PHOTOS = window.PACE_PHOTOS || {};
+  // Our own photos (data/my-photos.js) come first. Otherwise only approved
+  // Open Food Facts photos ("ok") are shown; see data/photos.js and photo-report.md.
+  const MY_PHOTOS = window.PACE_MY_PHOTOS || {};
+  const OFF_PHOTOS = window.PACE_PHOTOS || {};
+  // { file, source? } — source is set only for Open Food Facts photos (needs a credit).
+  function photoFor(name) {
+    if (MY_PHOTOS[name]) return { file: MY_PHOTOS[name] };
+    const p = OFF_PHOTOS[name];
+    return p && p.status === "ok" ? { file: p.file, source: p.source } : null;
+  }
   const svg = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const CATEGORY_ICONS = {
     Drinks:  svg('<path d="M10 2.5h4M10.5 2.5v3L8 9v11a1.5 1.5 0 0 0 1.5 1.5h5A1.5 1.5 0 0 0 16 20V9l-2.5-3.5v-3"/><path d="M8 13h8"/>'),
@@ -78,9 +86,9 @@
     Meals:   svg('<path d="M3.5 11h17a8.5 8.5 0 0 1-17 0z"/><path d="M9 7.5c0-1.5 1.5-1.5 1.5-3M13.5 7.5c0-1.5 1.5-1.5 1.5-3"/>'),
   };
   function thumb(it, big = false) {
-    const p = PHOTOS[it.name];
+    const p = photoFor(it.name);
     const cls = `thumb${big ? " big" : ""}`;
-    if (p && p.status === "ok") return `<img class="${cls}" src="${esc(p.file)}" alt="" loading="lazy" decoding="async">`;
+    if (p) return `<img class="${cls}" src="${esc(p.file)}" alt="" loading="lazy" decoding="async">`;
     return `<span class="${cls} icon">${CATEGORY_ICONS[it.category] || CATEGORY_ICONS.Snacks}</span>`;
   }
 
@@ -372,8 +380,8 @@
     const a = analyze(it);
     const isMeal = it.category === "Meals";
     const n = new Set(a.known.map((e) => e.loc)).size;
-    const photo = PHOTOS[it.name];
-    const credit = photo && photo.status === "ok" && photo.source
+    const photo = photoFor(it.name);
+    const credit = photo && photo.source
       ? `<p class="photo-credit"><a href="${esc(photo.source)}" target="_blank" rel="noopener">Photo: Open Food Facts</a></p>` : "";
     let html = `<div class="item-head">${thumb(it, true)}<div>
       <h1 class="item-name">${esc(it.name)}</h1>

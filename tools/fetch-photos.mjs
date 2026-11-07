@@ -353,7 +353,10 @@ window.PACE_PHOTOS = ${JSON.stringify(out, null, 2)};
 // After a full re-run, delete photos no item uses any more.
 if (all) {
   const used = new Set(Object.values(out).map((p) => path.basename(p.file)));
-  for (const f of fs.readdirSync(IMAGES)) if (!used.has(f)) fs.unlinkSync(path.join(IMAGES, f));
+  // Only loose files; folders like images/custom/ (our own photos) are left alone.
+  for (const f of fs.readdirSync(IMAGES)) {
+    if (!used.has(f) && fs.statSync(path.join(IMAGES, f)).isFile()) fs.unlinkSync(path.join(IMAGES, f));
+  }
 }
 
 // photo-report.md
