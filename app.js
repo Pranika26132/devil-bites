@@ -17,6 +17,7 @@
   const catalog = Object.entries(items).map(([name, info]) => ({
     name,
     category: info.category,
+    caffeine: info.caffeine || null,
     entries: [],
     names: [name, ...(info.aka || [])].map(norm),
     extra: "",
@@ -74,6 +75,13 @@
     if (p && p.status === "ok") return `<img class="${cls}" src="${esc(p.file)}" alt="" loading="lazy" decoding="async">`;
     return `<span class="${cls} icon">${CATEGORY_ICONS[it.category] || CATEGORY_ICONS.Snacks}</span>`;
   }
+
+  // ── Caffeine ──
+  // "200mg" or "75–110mg" (a range when the flavor isn't known); "~" marks an estimate.
+  const cafAmount = (c) => `${c.estimate ? "~" : ""}${c.mg}${c.max ? `–${c.max}` : ""}mg`;
+  const cafKind = (c) => (c.estimate ? "estimate" : "typical");
+  const cafTag = (c, short = false) =>
+    (c ? `<span class="tag caf">${cafAmount(c)}${short ? "" : " caffeine"} · ${cafKind(c)}</span>` : "");
 
   // Splits an item's entries into the groups the comparison screen shows.
   function analyze(it) {
@@ -232,7 +240,7 @@
         <span class="card-main">
           <p class="place">${esc(r.item)}</p>
           <p class="where">${esc(where)}</p>
-          ${isBest ? `<span class="tag">Best price</span>` : ""}
+          ${isBest || r.it.caffeine ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${cafTag(r.it.caffeine)}</span>` : ""}
         </span>
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
@@ -362,6 +370,11 @@
       ${n ? `<p class="count">${n} ${n === 1 ? "place" : "places"} ${isMeal ? "serve" : "sell"} this</p>`
           : `<p class="count">Where it’s sold hasn’t been recorded yet</p>`}
       ${credit}</div></div>`;
+    const c = it.caffeine;
+    if (c) {
+      html += `<p class="caf-line"><strong>${cafAmount(c)} caffeine</strong> · ${cafKind(c)}${c.size ? ` for ${esc(c.size)}` : ""}${
+        c.note ? `<br><span class="meta">${esc(c.note)}</span>` : ""}</p>`;
+    }
 
     if (a.priced.length || a.unpriced.length) {
       html += `<div class="cards">`;
@@ -422,6 +435,7 @@
           <span class="card-main">
             <p class="place">${esc(it.name)}</p>
             <p class="where">${d.places} places sell this</p>
+            ${it.caffeine ? `<span class="tags">${cafTag(it.caffeine)}</span>` : ""}
           </span>
           ${save ? `<span class="save">Save $${d.gap.toFixed(2)}</span>` : ""}
         </span>
@@ -451,10 +465,268 @@
     if (b) location.hash = "#/deals/item/" + encodeURIComponent(b.dataset.item);
   });
 
+  // ── Caffeine ──
+  // Drinks and snacks ranked by cost per 100mg of caffeine at their cheapest spot.
+  // For a range (e.g. Frappuccino 75–110mg) the ranking uses the low end, so an
+  // item never looks like a better deal than it might be.
+  const per100 = (price, mg) => (price / mg) * 100;
+  const caffeineList = catalog
+    .filter((it) => it.caffeine)
+    .map((it) => {
+      const { a } = itemFacts.get(it);
+      const c = it.caffeine;
+      return a.priced.length
+        ? { it, a, c, cost: per100(a.min, c.mg), best: c.max ? per100(a.min, c.max) : null }
+        : { it, a, c, cost: null };
+    })
+    .sort((x, y) => (x.cost == null) - (y.cost == null) || x.cost - y.cost || x.it.name.localeCompare(y.it.name));
+
+  function caffeineCard(r, rank) {
+    const { it, a, c } = r;
+    const priced = r.cost != null;
+    const costText = !priced ? "No price yet"
+      : r.best ? `$${r.best.toFixed(2)}–${r.cost.toFixed(2)}` : `$${r.cost.toFixed(2)}`;
+    return `
+      <button type="button" class="card row caf-card${priced ? "" : " unpriced"}" data-item="${esc(it.name)}">
+        ${priced ? `<span class="rank">${rank}</span>` : ""}
+        ${thumb(it)}
+        <span class="card-main">
+          <p class="place">${esc(it.name)}</p>
+          <p class="where">${priced ? `${esc(spotList(a.priced, a.min))} · $${a.min.toFixed(2)}` : "Price not confirmed yet"}</p>
+          <span class="tags">${cafTag(c, true)}${c.size ? `<span class="tag size">${esc(c.size)}</span>` : ""}</span>
+        </span>
+        <span class="price-col">
+          <span class="price">${costText}</span>
+          ${priced ? `<span class="per">per 100mg</span>` : ""}
+        </span>
+      </button>`;
+  }
+
+  function renderCaffeine() {
+    const priced = caffeineList.filter((r) => r.cost != null), unpriced = caffeineList.filter((r) => r.cost == null);
+    $("caffeine-count").textContent = `${priced.length} drinks and snacks, cheapest caffeine first`;
+    $("caffeine-list").innerHTML = priced.map((r, i) => caffeineCard(r, i + 1)).join("")
+      + (unpriced.length ? `<p class="section-label">No price yet (${unpriced.length})</p>` + unpriced.map((r) => caffeineCard(r)).join("") : "");
+  }
+  $("caffeine-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-item]");
+    if (b) location.hash = "#/caffeine/item/" + encodeURIComponent(b.dataset.item);
+  });
+
+  // ── My Pace ──
+  // Daily budget = balance ÷ days left on campus (today through the last day,
+  // minus days away; weekdays only for Monday–Friday plans).
+  // Weekly budget = daily × those days in the next 7.
+  // With a meal plan picked, Duke's expected balance starts at the plan total on
+  // the first day of the semester and drops a little every day, reaching $0 on
+  // the last day.
+  // Everything is saved in this browser only (localStorage), never sent anywhere.
+  const PACE_KEY = "pace.myPace";
+  const MEAL = window.PACE_MEAL_PLANS || { plans: [] };
+  const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+  const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July",
+    "August", "September", "October", "November", "December"];
+  const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const isISO = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const parseISO = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const daysBetween = (a, b) => Math.round((b - a) / 86400000);
+  const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+  const dollars = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
+
+  const semesterStart = MEAL.start ? parseISO(MEAL.start) : null;
+  const semesterEnd = MEAL.end ? parseISO(MEAL.end) : null;
+  const DEFAULT_LAST_DAY = MEAL.end || "";
+
+  let pace = { plan: "", balance: "", lastDay: DEFAULT_LAST_DAY, away: [] };
+  try {
+    const saved = JSON.parse(localStorage.getItem(PACE_KEY) || "null");
+    if (saved && typeof saved === "object") {
+      pace = {
+        plan: MEAL.plans.some((p) => p.id === saved.plan) ? saved.plan : "",
+        balance: String(saved.balance ?? ""),
+        lastDay: isISO(String(saved.lastDay ?? "")) ? saved.lastDay : DEFAULT_LAST_DAY,
+        away: Array.isArray(saved.away) ? saved.away.filter(isISO) : [],
+      };
+    }
+  } catch { /* storage unavailable: start empty */ }
+  const savePace = () => { try { localStorage.setItem(PACE_KEY, JSON.stringify(pace)); } catch { /* ignore */ } };
+
+  const parseBalance = (s) => {
+    const n = parseFloat(String(s).replace(/[$,\s]/g, ""));
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  };
+  const currentPlan = () => MEAL.plans.find((p) => p.id === pace.plan) || null;
+
+  // Where Duke's chart says the balance should be on date `d`. It drops by the
+  // same amount every day, from the plan total on the first day to $0 on the
+  // last day (about the weekly amount ÷ 7 per day).
+  function expectedBalance(plan, d) {
+    if (!semesterStart || !semesterEnd) return null;
+    if (d <= semesterStart) return plan.total;
+    if (d >= semesterEnd) return 0;
+    const share = daysBetween(semesterStart, d) / daysBetween(semesterStart, semesterEnd);
+    return plan.total * (1 - share);
+  }
+
+  // Days from `from` through `to` (inclusive) that count toward the budget.
+  function campusDays(from, to, awaySet, weekdaysOnly) {
+    let n = 0;
+    for (let d = from; d <= to; d = addDays(d, 1)) {
+      if (weekdaysOnly && isWeekend(d)) continue;
+      if (!awaySet.has(iso(d))) n++;
+    }
+    return n;
+  }
+
+  function computePace() {
+    const t = today();
+    const plan = currentPlan();
+    const weekdaysOnly = !!(plan && plan.weekdaysOnly);
+    const balance = parseBalance(pace.balance);
+    const last = isISO(pace.lastDay) ? parseISO(pace.lastDay) : null;
+    const away = new Set(pace.away);
+    const expected = plan ? expectedBalance(plan, t) : null;
+    const base = { t, plan, weekdaysOnly, balance, last, expected };
+    if (balance == null || !last) return { ...base, ready: false };
+    if (last < t) return { ...base, ready: false, past: true };
+    const left = campusDays(t, last, away, weekdaysOnly);
+    const allDays = campusDays(t, last, new Set(), weekdaysOnly);
+    const daily = left ? balance / left : null;
+    // Today doesn't count if it's an away day, or a weekend on a Monday–Friday plan.
+    const counts = (d) => !away.has(iso(d)) && !(weekdaysOnly && isWeekend(d));
+    let nextDay = null;
+    for (let d = addDays(t, 1); d <= last; d = addDays(d, 1)) if (counts(d)) { nextDay = d; break; }
+    return {
+      ...base, ready: true, left, awayInRange: allDays - left,
+      daily, nextDay,
+      dailyNoAway: allDays ? balance / allDays : null,
+      notCountedToday: !counts(t),
+      diff: expected != null ? balance - expected : null,
+    };
+  }
+
+  function renderCalendar(p) {
+    const t = today();
+    const end = p.last && p.last >= t ? p.last : addDays(t, 60);
+    const away = new Set(pace.away);
+    let html = "";
+    for (let m = new Date(t.getFullYear(), t.getMonth(), 1); m <= end; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)) {
+      html += `<div class="month"><p class="month-name">${MONTH_NAMES[m.getMonth()]}</p><div class="cal">`;
+      html += WEEKDAYS.map((w) => `<span class="dow" aria-hidden="true">${w}</span>`).join("");
+      for (let i = 0; i < m.getDay(); i++) html += `<span></span>`;
+      for (let d = m; d.getMonth() === m.getMonth(); d = addDays(d, 1)) {
+        const key = iso(d);
+        const off = d < t || d > end;
+        const notCounted = p.weekdaysOnly && isWeekend(d); // weekends don't count on Mon–Fri plans
+        const on = away.has(key);
+        const label = `${DAY_NAMES[d.getDay()]}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
+        html += off || notCounted
+          ? `<span class="day ${off ? "off" : "weekend"}" aria-hidden="true">${d.getDate()}</span>`
+          : `<button type="button" class="day${on ? " away-on" : ""}${key === iso(t) ? " today" : ""}" data-day="${key}" aria-pressed="${on}" aria-label="${label}${on ? ", away" : ""}">${d.getDate()}</button>`;
+      }
+      html += `</div></div>`;
+    }
+    $("pace-cal").innerHTML = html;
+  }
+
+  function renderPace() {
+    const p = computePace();
+    const dayWord = p.weekdaysOnly ? "weekday" : "day";
+    const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+    $("pace-date").textContent = `${DAY_NAMES[p.t.getDay()]}, ${MONTH_NAMES[p.t.getMonth()].slice(0, 3)} ${p.t.getDate()}`;
+    $("pace-source").textContent = p.plan ? MEAL.source : "";
+    $("pace-source").hidden = !p.plan;
+    const $pill = $("pace-pill"), $hint = $("pace-hint");
+
+    // Expected balance and ahead / behind (needs a plan and a balance).
+    const showExpected = p.plan && p.expected != null;
+    $("pace-expected").hidden = !showExpected;
+    if (showExpected) {
+      $("pace-exp-amt").textContent = dollars(p.expected);
+      const $s = $("pace-status");
+      if (p.balance == null) {
+        $s.textContent = "Enter your balance to see if you’re ahead or behind.";
+        $s.className = "pace-status";
+      } else {
+        const d = Math.round(p.balance - p.expected);
+        $s.textContent = d > 0 ? `You’re $${d.toLocaleString("en-US")} ahead`
+          : d < 0 ? `You’re $${(-d).toLocaleString("en-US")} behind` : "You’re right on pace";
+        $s.className = "pace-status " + (d > 0 ? "ahead" : d < 0 ? "behind" : "on");
+      }
+    }
+
+    $("pace-daily").classList.toggle("is-empty", !p.ready || p.daily == null);
+    $("pace-sub").textContent = "You can spend today";
+    if (!p.ready || p.daily == null) {
+      $("pace-daily").textContent = "$0.00";
+      $pill.hidden = true;
+      $("pace-new").hidden = true;
+      $hint.hidden = false;
+      $hint.textContent = p.past ? "That last day has already passed. Pick a new one below."
+        : p.ready ? `You’ve marked every ${dayWord} left as away. Unmark one to see a budget.`
+        : "Enter your food points balance below to see your budget.";
+    } else {
+      $("pace-daily").textContent = dollars(p.daily);
+      // On a day that doesn't count, the number is for the next day that does.
+      if (p.notCountedToday) {
+        const tomorrow = p.nextDay && daysBetween(p.t, p.nextDay) === 1;
+        $("pace-sub").textContent = !p.nextDay ? "Your daily budget"
+          : tomorrow ? "Tomorrow’s budget" : `${DAY_NAMES[p.nextDay.getDay()]}’s budget`;
+      }
+      $hint.hidden = !p.notCountedToday;
+      $hint.textContent = !p.notCountedToday ? ""
+        : p.weekdaysOnly && isWeekend(p.t) ? "Your plan covers Monday–Friday, so nothing is set aside for today."
+        : "You marked today as away, so nothing is set aside for it.";
+      $pill.hidden = false;
+      $pill.textContent = `${plural(p.left, dayWord)} on campus left`;
+      $("pace-new").hidden = !p.awayInRange;
+      if (p.awayInRange) {
+        $("pace-new-amount").textContent = dollars(p.daily);
+        $("pace-new-sub").textContent = `Up from ${dollars(p.dailyNoAway)} a ${dayWord}`;
+      }
+    }
+
+    const $away = $("pace-away");
+    const counts = (k) => !(p.weekdaysOnly && isWeekend(parseISO(k)));
+    const n = pace.away.filter((k) => k >= iso(p.t) && (!p.last || k <= iso(p.last)) && counts(k)).length;
+    $away.hidden = !n;
+    $away.textContent = `${plural(n, dayWord)} away`;
+    renderCalendar(p);
+  }
+
+  // Inputs: fill from saved values, save on every change.
+  $("pace-plan").insertAdjacentHTML("beforeend",
+    MEAL.plans.map((pl) => `<option value="${pl.id}">${esc(pl.name)} · ${dollars(pl.total)}</option>`).join(""));
+  $("pace-plan").value = pace.plan;
+  $("pace-balance").value = pace.balance;
+  $("pace-last").value = pace.lastDay;
+  $("pace-last").min = iso(today());
+  $("pace-plan").addEventListener("change", (e) => { pace.plan = e.target.value; savePace(); renderPace(); });
+  $("pace-balance").addEventListener("input", (e) => { pace.balance = e.target.value; savePace(); renderPace(); });
+  $("pace-balance").addEventListener("blur", (e) => {
+    const n = parseBalance(e.target.value);
+    if (n != null) { e.target.value = n.toFixed(2); pace.balance = e.target.value; savePace(); }
+  });
+  $("pace-last").addEventListener("change", (e) => { pace.lastDay = e.target.value; savePace(); renderPace(); });
+  $("pace-cal").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-day]");
+    if (!b) return;
+    const k = b.dataset.day;
+    pace.away = pace.away.includes(k) ? pace.away.filter((x) => x !== k) : [...pace.away, k].sort();
+    savePace();
+    renderPace();
+  });
+
   // ── Screens & routing ──
   // Each screen has its own address so the phone's back button works:
-  //   #/browse  #/item/<name>  #/deals  #/deals/item/<name>  #/protein  #/me
-  // An item opened from Deals lives under #/deals/… so the Deals tab stays lit.
+  //   #/browse  #/item/<name>  #/deals  #/deals/item/<name>
+  //   #/caffeine  #/caffeine/item/<name>  #/protein  #/me
+  // An item opened from Deals lives under #/deals/… so the Deals tab stays lit (same for Caffeine).
+  const TAB_NAMES = { browse: "Browse", deals: "Deals", caffeine: "Caffeine" };
   const views = [...document.querySelectorAll(".view")];
   const scrollMemory = {};   // list screen -> scroll position
   let current = null;        // "browse", "deals", "item", …
@@ -466,15 +738,16 @@
   function route() {
     const h = location.hash.replace(/^#\/?/, "");
     let view = "browse", tab = "browse";
-    const m = h.match(/^(deals\/)?item\/(.+)$/);
+    const m = h.match(/^(?:(deals|caffeine)\/)?item\/(.+)$/);
     if (m) {
       const it = byName.get(decodeURIComponent(m[2]));
       if (it) {
         renderItem(it);
         view = "item";
-        tab = m[1] ? "deals" : "browse";
+        tab = m[1] || "browse";
       }
-    } else if (["deals", "protein", "me"].includes(h)) view = tab = h;
+    } else if (["deals", "caffeine", "protein", "me"].includes(h)) view = tab = h;
+    if (view === "me") renderPace(); // keeps "today" right if the app was left open overnight
 
     if (current && current !== "item") scrollMemory[current] = window.scrollY;
     if (view === "item") { if (current !== "item") prevList = current; }
@@ -483,7 +756,7 @@
     views.forEach((v) => (v.hidden = v.id !== "view-" + view));
     document.querySelectorAll(".tab").forEach((t) =>
       t.dataset.tab === tab ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"));
-    $("back-label").textContent = tab === "deals" ? "Deals" : "Browse";
+    $("back-label").textContent = TAB_NAMES[tab] || "Browse";
     if (view !== "item") document.title = "Pace";
 
     // Coming back to a list returns to where the user was in it.
@@ -508,5 +781,7 @@
   window.addEventListener("hashchange", route);
   renderBrowse();
   renderDeals();
+  renderCaffeine();
+  renderPace();
   route();
 })();

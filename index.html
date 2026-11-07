@@ -60,6 +60,16 @@
     <section class="cards" id="deals-list"></section>
   </main>
 
+  <main class="view" id="view-caffeine" data-tab="caffeine" hidden>
+    <header class="top">
+      <p class="eyebrow">Caffeine</p>
+      <h1 class="title">The most caffeine for your points</h1>
+    </header>
+    <p class="count" id="caffeine-count"></p>
+    <p class="caf-note">Cost per 100mg at each item’s cheapest spot. Amounts are typical for the size shown; “~” marks an estimate.</p>
+    <section class="cards" id="caffeine-list"></section>
+  </main>
+
   <main class="view" id="view-protein" data-tab="protein" hidden>
     <header class="top">
       <p class="eyebrow">Protein</p>
@@ -74,11 +84,56 @@
   <main class="view" id="view-me" data-tab="me" hidden>
     <header class="top">
       <p class="eyebrow">My Pace</p>
-      <h1 class="title">One number, every day</h1>
     </header>
-    <div class="soon">
-      <span class="tag">Coming soon</span>
-      <p>Enter your food points balance and Pace turns it into what you can spend today and still last the semester.</p>
+
+    <!-- Today's budget (deck page 6) -->
+    <section class="budget" aria-live="polite">
+      <p class="budget-label" id="pace-date"></p>
+      <p class="budget-sub" id="pace-sub">You can spend today</p>
+      <p class="budget-amount" id="pace-daily">—</p>
+      <span class="tag" id="pace-pill" hidden></span>
+      <p class="budget-hint" id="pace-hint"></p>
+      <div class="expected" id="pace-expected" hidden>
+        <p class="expected-line">Expected today: <strong id="pace-exp-amt"></strong></p>
+        <p class="pace-status" id="pace-status"></p>
+      </div>
+    </section>
+
+    <!-- Inputs -->
+    <section class="card pace-form">
+      <label class="field">
+        <span class="field-label">Meal plan</span>
+        <select id="pace-plan" class="select-input">
+          <option value="">Choose your plan</option>
+        </select>
+        <span class="field-note source" id="pace-source"></span>
+      </label>
+      <label class="field">
+        <span class="field-label">Food points balance</span>
+        <span class="money-input">
+          <span aria-hidden="true">$</span>
+          <input id="pace-balance" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00">
+        </span>
+      </label>
+      <label class="field">
+        <span class="field-label">Last day on campus</span>
+        <input id="pace-last" type="date" class="date-input">
+      </label>
+      <p class="field-note">Saved on this device only.</p>
+    </section>
+
+    <!-- Days away (deck page 12) -->
+    <section class="card away">
+      <p class="away-title">Days you’ll be away</p>
+      <p class="field-note">Tap the days you’ll be gone, like breaks, trips or weekends home.</p>
+      <div id="pace-cal"></div>
+      <p class="away-pill" id="pace-away" hidden></p>
+    </section>
+
+    <div class="tip" id="pace-new" hidden>
+      <p class="tip-title">Your new daily pace</p>
+      <p class="tip-amount" id="pace-new-amount"></p>
+      <p id="pace-new-sub"></p>
     </div>
   </main>
 
@@ -105,6 +160,14 @@
         </svg>
         <span>Deals</span>
       </a>
+      <a class="tab" href="#/caffeine" data-tab="caffeine">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4.5 9h12v5.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M16.5 10.5h1.2a2.5 2.5 0 0 1 0 5h-1.6" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M8.5 3.5c0 1.2 1.2 1.3 1.2 2.5M12.5 3.5c0 1.2 1.2 1.3 1.2 2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Caffeine</span>
+      </a>
       <a class="tab" href="#/protein" data-tab="protein">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -124,6 +187,7 @@
 
   <script src="data/prices.js"></script>
   <script src="data/photos.js"></script>
+  <script src="data/meal-plans.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
