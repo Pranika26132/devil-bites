@@ -252,7 +252,6 @@ const NAMES = {
   "boomchickapop popcorn (big)": "BOOMCHICKAPOP popcorn",
   "lesserevil popcorn (big)": "LesserEvil popcorn",
   "skinnypop popcorn (big)": "SkinnyPop popcorn",
-  "quiona cups": "Quinoa cup",
   "cheese stick": "Cheese stick",
   "brownie brittle": "Brownie Brittle",
   "toblerone": "Toblerone",
@@ -302,42 +301,41 @@ function sizeFromName(item) {
 // Items that aren't in data/prices.js yet: category (+ aka / caffeine / protein).
 const NEW_ITEMS = {
   "Orange juice":                    { category: "Drinks" },
-  "Mtn Dew AMP":                     { category: "Energy", aka: ["amp"], caffeine: { mg: 142, size: "16 oz" } },
+  "Mtn Dew AMP":                     { category: "Drinks", energy: true, aka: ["amp"], caffeine: { mg: 142, size: "16 oz" } },
   "Smartwater, large":               { category: "Drinks", aka: ["smart water"] },
   "Smartwater, small":               { category: "Drinks", aka: ["smart water"] },
   "Soda (brand not recorded)":       { category: "Drinks" },
-  "Chobani yogurt cup":              { category: "Protein", aka: ["greek yogurt"] },
+  "Chobani yogurt cup":              { category: "Snacks", highProtein: true, healthy: true, aka: ["greek yogurt"] },
   "Clif or Luna bar":                { category: "Snacks", aka: ["luna bar"] },
   "Snack Factory Pretzel Crisps":    { category: "Snacks", aka: ["pretzels"] },
-  "Snack Factory Chocolate Covered Pretzel Crisps": { category: "Sweets", aka: ["pretzels"] },
+  "Snack Factory Chocolate Covered Pretzel Crisps": { category: "Snacks", aka: ["pretzels"] },
   "BOOMCHICKAPOP popcorn":           { category: "Snacks", aka: ["angie's", "popcorn"] },
   "LesserEvil popcorn":              { category: "Snacks", aka: ["popcorn"] },
   "SkinnyPop popcorn":               { category: "Snacks", aka: ["popcorn"] },
-  "Blue Diamond almonds":            { category: "Snacks", aka: ["nuts"] },
-  "Kitchen & Love Quinoa Quick Cup": { category: "Meals", aka: ["quinoa"] },
-  "Reese’s (type not recorded)":     { category: "Sweets", aka: ["reeses"] },
-  "Skittles":                        { category: "Sweets" },
-  "Starburst":                       { category: "Sweets" },
-  "Hershey’s bar":                   { category: "Sweets", aka: ["hersheys"] },
-  "Lindt or Ghirardelli chocolate (shelf tag)": { category: "Sweets", aka: ["lindt"] },
-  "King-size candy bar (shelf tag)": { category: "Sweets" },
-  "Peg-bag candy (assorted)":        { category: "Sweets" },
-  "Ritter Sport chocolate":          { category: "Sweets" },
-  "Chocolove chocolate":             { category: "Sweets" },
-  "Milka chocolate":                 { category: "Sweets" },
-  "BarkTHINS snacking chocolate":    { category: "Sweets" },
-  "Trident gum, 28-pack":            { category: "Sweets" },
-  "Orbit gum, 14 pieces":            { category: "Sweets" },
-  "Haribo gummies, peg bag":         { category: "Sweets", aka: ["haribo", "gummy bears", "goldbears"] },
-  "Trolli gummies, peg bag":         { category: "Sweets", aka: ["trolli", "sour crawlers"] },
-  "Warheads, peg bag":               { category: "Sweets", aka: ["warheads", "sour candy"] },
+  "Blue Diamond almonds":            { category: "Snacks", healthy: true, aka: ["nuts"] },
+  "Kitchen & Love Quinoa Quick Cup": { category: "Meals", healthy: true, aka: ["quinoa"] },
+  "Reese’s (type not recorded)":     { category: "Snacks", aka: ["reeses"] },
+  "Skittles":                        { category: "Snacks" },
+  "Starburst":                       { category: "Snacks" },
+  "Hershey’s bar":                   { category: "Snacks", aka: ["hersheys"] },
+  "Lindt or Ghirardelli chocolate (shelf tag)": { category: "Snacks", aka: ["lindt"] },
+  "King-size candy bar (shelf tag)": { category: "Snacks" },
+  "Peg-bag candy (assorted)":        { category: "Snacks" },
+  "Ritter Sport chocolate":          { category: "Snacks" },
+  "Chocolove chocolate":             { category: "Snacks" },
+  "Milka chocolate":                 { category: "Snacks" },
+  "BarkTHINS snacking chocolate":    { category: "Snacks" },
+  "Trident gum, 28-pack":            { category: "Snacks" },
+  "Orbit gum, 14 pieces":            { category: "Snacks" },
+  "Haribo gummies, peg bag":         { category: "Snacks", aka: ["haribo", "gummy bears", "goldbears"] },
+  "Trolli gummies, peg bag":         { category: "Snacks", aka: ["trolli", "sour crawlers"] },
+  "Warheads, peg bag":               { category: "Snacks", aka: ["warheads", "sour candy"] },
   "Dirty potato chips":              { category: "Snacks", aka: ["dirty chips", "chips"] },
-  "Quinoa cup":                      { category: "Meals", aka: ["quinoa"] },
-  "Cheese stick":                    { category: "Protein", aka: ["string cheese"] },
-  "Brownie Brittle":                 { category: "Sweets" },
-  "Toblerone":                       { category: "Sweets" },
-  "Jelly Belly jelly beans":         { category: "Sweets", aka: ["jelly beans"] },
-  "Lindt truffle (single)":          { category: "Sweets", aka: ["lindor"] },
+  "Cheese stick":                    { category: "Snacks", highProtein: true, healthy: true, aka: ["string cheese"] },
+  "Brownie Brittle":                 { category: "Snacks" },
+  "Toblerone":                       { category: "Snacks" },
+  "Jelly Belly jelly beans":         { category: "Snacks", aka: ["jelly beans"] },
+  "Lindt truffle (single)":          { category: "Snacks", aka: ["lindor"] },
 };
 
 // ── helpers ──
@@ -414,13 +412,20 @@ function objLiteral(o) {
     `${k}: ${v && typeof v === "object" && !Array.isArray(v) ? objLiteral(v) : js(v)}`).join(", ") + " }";
 }
 
+// Sheet rows left out on purpose (item name → why). Reported every run.
+const SKIP = {
+  "quiona cups": "duplicate of Kitchen & Love Quinoa Quick Cup",
+};
+
 // ── build ──
 const current = loadCurrent();
 const sheet = readSheet(SHEET);
 const problems = [];
+const skipped = [];
 const built = new Map(); // item|loc|price -> entry
 
 for (const r of sheet) {
+  if (r.item && SKIP[key(r.item)]) { skipped.push(`Line ${r.line}: “${r.item}” (${SKIP[key(r.item)]})`); continue; }
   const locId = r.loc ? LOCATIONS[key(r.loc)] : null;
   if (r.loc && !locId) { problems.push(`Line ${r.line}: unknown location “${r.loc}” (${r.item}); left out`); continue; }
   if (!r.item) { problems.push(`Line ${r.line}: no item name (${r.loc || "no place"}${r.price != null ? `, $${r.price}` : ""}); left out`); continue; }
@@ -479,7 +484,7 @@ const src = fs.readFileSync(OUT, "utf8");
 const locStart = src.indexOf("  // lat/lng power");
 const locEnd = src.indexOf("\n  },\n", src.indexOf("  locations: {")) + 6;
 const locationsBlock = src.slice(locStart, locEnd);
-const catOrder = ["Drinks", "Energy", "Protein", "Snacks", "Sweets", "Meals"];
+const catOrder = ["Drinks", "Snacks", "Meals"];
 const itemNames = Object.keys(items).sort((a, b) =>
   catOrder.indexOf(items[a].category) - catOrder.indexOf(items[b].category));
 const entries = [...built.values()].sort((a, b) =>
@@ -505,8 +510,8 @@ let out = `/*
 */
 window.PACE_DATA = {
 ${locationsBlock}
-  // category: Drinks · Energy · Snacks · Sweets · Protein · Meals
-  // (Browse has a filter chip for each, except Meals, which shows under All)
+  // category: Drinks · Snacks · Meals (Meals shows under All)
+  // energy / highProtein / healthy: true puts the item under that Browse chip too
   // aka: other spellings people might search for
   // caffeine: typical mg for the size shown (max = top of a range when the flavor
   //   isn't known; estimate: true = worked out, not from the label)
@@ -566,4 +571,5 @@ console.log(
   section("Removed (not in the sheet any more)", report.removed) +
   section("New items", report.newItems) +
   section("Items dropped (no rows left)", report.droppedItems) +
+  section("Skipped on purpose", skipped) +
   section("Problems", problems));

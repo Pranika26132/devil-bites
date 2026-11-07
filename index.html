@@ -43,6 +43,16 @@
 
     <p class="count" id="browse-count" aria-live="polite"></p>
     <section class="cards" id="browse-list"></section>
+
+    <!-- Hit your protein goal: shown with the Protein chip (deck page 10) -->
+    <section class="tip goal" id="protein-goal-box" hidden>
+      <label class="goal-label" for="protein-goal">Hit your protein goal</label>
+      <div class="goal-input">
+        <input id="protein-goal" type="number" inputmode="numeric" min="1" max="400" step="1" value="40" aria-describedby="goal-unit">
+        <span id="goal-unit">grams</span>
+      </div>
+      <div id="protein-combo" aria-live="polite"></div>
+    </section>
   </main>
 
   <!-- ── Item price comparison ──────────────────── -->
@@ -59,42 +69,6 @@
       <p class="subtitle">The biggest price gaps on campus</p>
     </header>
     <section class="cards" id="deals-list"></section>
-  </main>
-
-  <main class="view" id="view-caffeine" data-tab="caffeine" hidden>
-    <header class="top">
-      <p class="eyebrow">Caffeine</p>
-      <h1 class="title">Caffeine at the cheapest spot</h1>
-    </header>
-    <div class="sort-row" role="group" aria-label="Sort">
-      <span class="sort-label">Sort</span>
-      <div class="sorts" id="caffeine-sorts"></div>
-    </div>
-    <p class="count" id="caffeine-count"></p>
-    <section class="cards" id="caffeine-list"></section>
-  </main>
-
-  <main class="view" id="view-protein" data-tab="protein" hidden>
-    <header class="top">
-      <p class="eyebrow">Protein</p>
-      <h1 class="title">Most protein for your points</h1>
-      <p class="subtitle">The cheapest way to hit your goal</p>
-    </header>
-    <div class="sort-row" role="group" aria-label="Sort">
-      <span class="sort-label">Sort</span>
-      <div class="sorts" id="protein-sorts"></div>
-    </div>
-    <section class="cards" id="protein-list"></section>
-
-    <!-- Hit your protein goal (deck page 10) -->
-    <section class="tip goal">
-      <label class="goal-label" for="protein-goal">Hit your protein goal</label>
-      <div class="goal-input">
-        <input id="protein-goal" type="number" inputmode="numeric" min="1" max="400" step="1" value="40" aria-describedby="goal-unit">
-        <span id="goal-unit">grams</span>
-      </div>
-      <div id="protein-combo" aria-live="polite"></div>
-    </section>
   </main>
 
   <main class="view" id="view-me" data-tab="me" hidden>
@@ -178,20 +152,6 @@
           <circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/>
         </svg>
         <span>Deals</span>
-      </a>
-      <a class="tab" href="#/caffeine" data-tab="caffeine">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4.5 9h12v5.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M16.5 10.5h1.2a2.5 2.5 0 0 1 0 5h-1.6" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="M8.5 3.5c0 1.2 1.2 1.3 1.2 2.5M12.5 3.5c0 1.2 1.2 1.3 1.2 2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>Caffeine</span>
-      </a>
-      <a class="tab" href="#/protein" data-tab="protein">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>Protein</span>
       </a>
       <a class="tab" href="#/me" data-tab="me">
         <svg viewBox="0 0 24 24" aria-hidden="true">

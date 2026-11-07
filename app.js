@@ -26,6 +26,9 @@
     category: info.category,
     caffeine: info.caffeine || null,
     protein: info.protein || null,
+    energy: !!info.energy,
+    highProtein: !!info.highProtein,
+    healthy: !!info.healthy,
     entries: [],
     names: [name, ...(info.aka || [])].map(norm),
     extra: "",
@@ -89,7 +92,9 @@
     const p = photoFor(it.name);
     const cls = `thumb${big ? " big" : ""}`;
     if (p) return `<img class="${cls}" src="${esc(p.file)}" alt="" loading="lazy" decoding="async">`;
-    return `<span class="${cls} icon">${CATEGORY_ICONS[it.category] || CATEGORY_ICONS.Snacks}</span>`;
+    const icon = it.energy ? CATEGORY_ICONS.Energy : it.highProtein ? CATEGORY_ICONS.Protein
+      : CATEGORY_ICONS[it.category] || CATEGORY_ICONS.Snacks;
+    return `<span class="${cls} icon">${icon}</span>`;
   }
 
   // ── Caffeine ──
@@ -135,7 +140,6 @@
   // saved (no localStorage, no cookies) and never sent anywhere; distances are
   // worked out right here on the device.
   const METERS_PER_MIN = 80;
-  const DOLLARS_PER_WALK_MIN = 0.15; // Best nearby: a 10-minute walk "costs" the same as $1.50
   const OFF_CAMPUS_MINS = 30;
   let here = null;           // { lat, lng } once the user allows location
   let locating = false;
@@ -192,21 +196,36 @@
   }
 
   // ── Browse ──
-  const FILTERS = ["All", "Drinks", "Energy", "Snacks", "Sweets", "Protein"];
+  // Drinks / Snacks go by category; Energy / Protein / Healthy go by the item's
+  // flags, so an item can be in two (Muscle Milk is a drink and high protein).
+  const FILTERS = ["All", "Drinks", "Snacks", "Energy", "Protein", "Healthy"];
+  const inFilter = (it, f) => f === "All" ? true
+    : f === "Energy" ? !!it.energy
+    : f === "Protein" ? !!it.highProtein
+    : f === "Healthy" ? !!it.healthy
+    : it.category === f;
+
+  // `only` sorts appear only with that chip selected.
   const SORTS = [
-    { id: "price-asc",  label: "Price ↑",     full: "Price low to high" },
-    { id: "price-desc", label: "Price ↓",     full: "Price high to low" },
-    { id: "relevance",  label: "Relevance",   full: "Relevance: best matches and deals first" },
-    { id: "closest",    label: "Closest",     full: "Closest to me", needsLocation: true },
-    { id: "nearby",     label: "Best nearby", full: "Best nearby: balances price and walking time", needsLocation: true },
+    { id: "price-asc",  label: "Price ↑",       full: "Price low to high" },
+    { id: "caffeine",   label: "Most caffeine", full: "Most caffeine first", only: "Energy" },
+    { id: "protein",    label: "Most protein",  full: "Most protein first", only: "Protein" },
+    { id: "value",      label: "Best value",    full: "Best value: cheapest per 20g of protein", only: "Protein" },
+    { id: "price-desc", label: "Price ↓",       full: "Price high to low" },
+    { id: "closest",    label: "Closest",       full: "Closest to me", needsLocation: true },
   ];
   const needsLocation = (id) => SORTS.some((s) => s.id === id && s.needsLocation);
+  const sortFits = (id, f) => SORTS.some((s) => s.id === id && (!s.only || s.only === f));
 
   let filter = store.get("filter", "All");
   let sort = store.get("sort", "price-asc");
   if (!FILTERS.includes(filter)) filter = "All";
   // Location sorts aren't restored on reload, so the app never asks for location on its own.
-  if (!SORTS.some((s) => s.id === sort) || needsLocation(sort)) sort = "price-asc";
+  if (!sortFits(sort, filter) || needsLocation(sort)) sort = "price-asc";
+
+  const mgOf = (it) => (it.caffeine ? it.caffeine.max || it.caffeine.mg : null);
+  const gOf = (it) => (it.protein ? it.protein.g : null);
+  const per20 = (price, g) => (price / g) * 20;
 
   const byNameNumeric = (a, b) => a.item.localeCompare(b.item, undefined, { numeric: true });
 
@@ -214,7 +233,7 @@
     const q = norm($q.value);
     const rows = [];
     for (const it of catalog) {
-      if (filter !== "All" && it.category !== filter) continue;
+      if (!inFilter(it, filter)) continue;
       const s = q ? score(it, q) : 0;
       if (q && !s) continue;
       for (const e of it.entries) rows.push({ ...e, it, match: s, mins: walkMins(e.loc) });
@@ -222,26 +241,24 @@
     const unpricedLast = (a, b) => (a.price == null) - (b.price == null);
     const noDistanceLast = (a, b) => (a.mins == null) - (b.mins == null);
 
-    if (sort === "closest") {
+    // Most caffeine / most protein / best value: items without the number go last.
+    const missingLast = (f) => (a, b) => (f(a) == null) - (f(b) == null);
+    if (sort === "caffeine") {
+      const mg = (r) => mgOf(r.it);
+      rows.sort((a, b) => missingLast(mg)(a, b) || mg(b) - mg(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+    } else if (sort === "protein") {
+      const g = (r) => gOf(r.it);
+      rows.sort((a, b) => missingLast(g)(a, b) || g(b) - g(a) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
+    } else if (sort === "value") {
+      const v = (r) => (gOf(r.it) && r.price != null ? per20(r.price, gOf(r.it)) : null);
+      rows.sort((a, b) => missingLast(v)(a, b) || v(a) - v(b) || unpricedLast(a, b) || byNameNumeric(a, b));
+    } else if (sort === "closest") {
       rows.sort((a, b) => noDistanceLast(a, b) || a.mins - b.mins || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
-    } else if (sort === "nearby") {
-      // Price plus a small charge per minute of walking, lowest first.
-      const cost = (r) => r.price + DOLLARS_PER_WALK_MIN * r.mins;
-      const unscorable = (r) => r.mins == null || r.price == null;
-      rows.sort((a, b) => unscorable(a) - unscorable(b) || noDistanceLast(a, b) || unpricedLast(a, b)
-        || (cost(a) - cost(b)) || (a.price ?? 0) - (b.price ?? 0) || byNameNumeric(a, b));
-    } else if (sort === "price-asc") {
-      rows.sort((a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
     } else if (sort === "price-desc") {
       rows.sort((a, b) => unpricedLast(a, b) || b.price - a.price || byNameNumeric(a, b));
     } else {
-      // Relevance: best search match first, then biggest savings, then items sold
-      // in the most places. Each item's spots stay together, cheapest first.
-      rows.sort((a, b) => {
-        const fa = itemFacts.get(a.it), fb = itemFacts.get(b.it);
-        return b.match - a.match || fb.gap - fa.gap || fb.places - fa.places || byNameNumeric(a, b)
-          || unpricedLast(a, b) || (a.price ?? 0) - (b.price ?? 0);
-      });
+      // Price low to high (the default)
+      rows.sort((a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b));
     }
     return rows;
   }
@@ -261,6 +278,7 @@
         </span>
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
+          ${sort === "value" && !unpriced && gOf(r.it) ? `<span class="per">$${per20(r.price, gOf(r.it)).toFixed(2)} per 20g</span>` : ""}
           ${r.mins != null ? `<span class="walk">${walkLabel(r.mins)}</span>` : ""}
         </span>
       </button>`;
@@ -269,7 +287,7 @@
   function renderBrowse() {
     $filters.innerHTML = FILTERS.map((f) =>
       `<button type="button" class="chip" data-filter="${f}" aria-pressed="${f === filter}">${f}</button>`).join("");
-    $sorts.innerHTML = SORTS.map((s) =>
+    $sorts.innerHTML = SORTS.filter((s) => !s.only || s.only === filter).map((s) =>
       `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === sort}" aria-label="${s.full}" title="${s.full}"${locating ? " disabled" : ""}>${s.label}</button>`).join("");
 
     keepInView($filters);
@@ -297,6 +315,9 @@
       ? `${nItems} ${nItems === 1 ? "item matches" : "items match"} “${raw}”`
       : `${nItems} items · ${rows.length} prices`;
     $browseList.innerHTML = rows.map(browseRow).join("");
+    // "Hit your protein goal" shows under the list with the Protein chip.
+    $("protein-goal-box").hidden = filter !== "Protein" || !!raw;
+    if (filter === "Protein") renderProteinGoal();
   }
 
   // Keeps the selected pill visible in a sideways-scrolling row (phones only).
@@ -312,6 +333,8 @@
   function setFilter(f) {
     filter = f;
     store.set("filter", filter);
+    // A chip-only sort (e.g. Most caffeine) goes back to price when its chip is left.
+    if (!sortFits(sort, filter)) { sort = "price-asc"; store.set("sort", sort); }
     renderBrowse();
   }
 
@@ -488,111 +511,15 @@
     if (b) location.hash = "#/deals/item/" + encodeURIComponent(b.dataset.item);
   });
 
-  // ── Caffeine ──
-  // Energy drinks with a caffeine amount, at their cheapest spot (sodas, coffee
-  // and snacks with caffeine show it on their own pages but aren't listed here).
-  // Sorted by price (default) or by most caffeine.
-  const CAFFEINE_SORTS = [
-    { id: "price", label: "Price low to high" },
-    { id: "most",  label: "Most caffeine" },
-  ];
-  let caffeineSort = store.get("caffeineSort", "price");
-  if (!CAFFEINE_SORTS.some((s) => s.id === caffeineSort)) caffeineSort = "price";
-
-  const caffeineList = catalog
-    .filter((it) => it.caffeine && it.category === "Energy")
-    .map((it) => {
-      const { a } = itemFacts.get(it);
-      return { it, a, c: it.caffeine, price: a.priced.length ? a.min : null };
-    });
-
-  function sortedCaffeine() {
-    const byName = (x, y) => x.it.name.localeCompare(y.it.name, undefined, { numeric: true });
-    const list = caffeineList.filter((r) => r.price != null);
-    // For a range (Frappuccino 75–110mg) "most" uses the high end.
-    if (caffeineSort === "most") list.sort((x, y) => (y.c.max || y.c.mg) - (x.c.max || x.c.mg) || x.price - y.price || byName(x, y));
-    else list.sort((x, y) => x.price - y.price || byName(x, y));
-    return list;
-  }
-
-  function caffeineCard(r, first) {
-    const { it, a, c } = r;
-    const priced = r.price != null;
-    return `
-      <button type="button" class="card row caf-card${first ? " best" : ""}${priced ? "" : " unpriced"}" data-item="${esc(it.name)}">
-        ${thumb(it)}
-        <span class="card-main">
-          <p class="place">${esc(it.name)}</p>
-          <p class="where${priced ? " pro-spot" : ""}">${priced ? esc(spotList(a.priced, a.min)) : "Price not confirmed yet"}</p>
-          <span class="tags">${cafTag(c)}${c.size ? `<span class="tag size">${esc(c.size)}</span>` : ""}</span>
-        </span>
-        <span class="price">${priced ? `$${r.price.toFixed(2)}` : "No price yet"}</span>
-      </button>`;
-  }
-
-  function renderCaffeine() {
-    $("caffeine-sorts").innerHTML = CAFFEINE_SORTS.map((s) =>
-      `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === caffeineSort}">${s.label}</button>`).join("");
-    const list = sortedCaffeine(), unpriced = caffeineList.filter((r) => r.price == null);
-    $("caffeine-count").textContent = `${list.length} energy drinks at their cheapest spot`;
-    $("caffeine-list").innerHTML = list.map((r, i) => caffeineCard(r, i === 0)).join("")
-      + (unpriced.length ? `<p class="section-label">No price yet (${unpriced.length})</p>` + unpriced.map((r) => caffeineCard(r)).join("") : "");
-  }
-  $("caffeine-sorts").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-sort]");
-    if (!b) return;
-    caffeineSort = b.dataset.sort;
-    store.set("caffeineSort", caffeineSort);
-    renderCaffeine();
-  });
-  $("caffeine-list").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-item]");
-    if (b) location.hash = "#/caffeine/item/" + encodeURIComponent(b.dataset.item);
-  });
-
-  // ── Protein ──
-  // Every item with a protein amount, at its cheapest spot.
+  // ── Protein goal (shown on Browse with the Protein chip) ──
+  // Cheapest combo of items with a protein amount, each at its cheapest spot.
   const MAX_EACH = 2; // the goal combo uses at most this many of the same item
-  const PROTEIN_SORTS = [
-    { id: "price", label: "Price low to high" },
-    { id: "most",  label: "Most protein" },
-    { id: "value", label: "Best value" },
-  ];
-  let proteinSort = store.get("proteinSort", "price");
-  if (!PROTEIN_SORTS.some((s) => s.id === proteinSort)) proteinSort = "price";
-
-  const per20 = (price, g) => (price / g) * 20;
   const proteinItems = catalog
     .filter((it) => it.protein && itemFacts.get(it).a.priced.length)
     .map((it) => {
       const { a } = itemFacts.get(it);
-      return { it, a, g: it.protein.g, price: a.min, value: per20(a.min, it.protein.g) };
+      return { it, a, g: it.protein.g, price: a.min };
     });
-  const byItem = (x, y) => x.it.name.localeCompare(y.it.name);
-
-  function sortedProtein() {
-    const list = [...proteinItems];
-    if (proteinSort === "most") list.sort((x, y) => y.g - x.g || x.price - y.price || byItem(x, y));
-    else if (proteinSort === "value") list.sort((x, y) => x.value - y.value || byItem(x, y));
-    else list.sort((x, y) => x.price - y.price || byItem(x, y));
-    return list;
-  }
-
-  function proteinCard(r, first) {
-    return `
-      <button type="button" class="card row pro-card${first ? " best" : ""}" data-item="${esc(r.it.name)}">
-        ${thumb(r.it)}
-        <span class="card-main">
-          <p class="place">${esc(r.it.name)}</p>
-          <p class="where pro-spot">${esc(spotList(r.a.priced, r.price))}</p>
-          <span class="tags">${proTag(r.it.protein)}</span>
-        </span>
-        <span class="price-col">
-          <span class="price">$${r.price.toFixed(2)}</span>
-          <span class="per">$${r.value.toFixed(2)} per 20g</span>
-        </span>
-      </button>`;
-  }
 
   // Cheapest combo reaching at least `goal` grams, using up to MAX_EACH of each
   // item. Small 0/1 knapsack over grams (capped at the goal).
@@ -640,24 +567,6 @@
       </ul>`;
   }
 
-  function renderProtein() {
-    $("protein-sorts").innerHTML = PROTEIN_SORTS.map((s) =>
-      `<button type="button" class="sort" data-sort="${s.id}" aria-pressed="${s.id === proteinSort}">${s.label}</button>`).join("");
-    keepInView($("protein-sorts").parentElement);
-    $("protein-list").innerHTML = sortedProtein().map((r, i) => proteinCard(r, i === 0)).join("");
-  }
-
-  $("protein-sorts").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-sort]");
-    if (!b) return;
-    proteinSort = b.dataset.sort;
-    store.set("proteinSort", proteinSort);
-    renderProtein();
-  });
-  $("protein-list").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-item]");
-    if (b) location.hash = "#/protein/item/" + encodeURIComponent(b.dataset.item);
-  });
   $("protein-goal").value = store.get("proteinGoal", "40");
   $("protein-goal").addEventListener("input", (e) => { store.set("proteinGoal", e.target.value); renderProteinGoal(); });
 
@@ -890,9 +799,9 @@
   // ── Screens & routing ──
   // Each screen has its own address so the phone's back button works:
   //   #/browse  #/item/<name>  #/deals  #/deals/item/<name>
-  //   #/caffeine  #/caffeine/item/<name>  #/protein  #/me
-  // An item opened from Deals lives under #/deals/… so the Deals tab stays lit (same for Caffeine).
-  const TAB_NAMES = { browse: "Browse", deals: "Deals", caffeine: "Caffeine", protein: "Protein" };
+  //   #/me   (old #/caffeine and #/protein links open Browse)
+  // An item opened from Deals lives under #/deals/… so the Deals tab stays lit.
+  const TAB_NAMES = { browse: "Browse", deals: "Deals", me: "My Pace" };
   const views = [...document.querySelectorAll(".view")];
   const scrollMemory = {};   // list screen -> scroll position
   let current = null;        // "browse", "deals", "item", …
@@ -910,9 +819,9 @@
       if (it) {
         renderItem(it);
         view = "item";
-        tab = m[1] || "browse";
+        tab = TAB_NAMES[m[1]] ? m[1] : "browse";
       }
-    } else if (["deals", "caffeine", "protein", "me"].includes(h)) view = tab = h;
+    } else if (["deals", "me"].includes(h)) view = tab = h;
     if (view === "me") renderPace(); // keeps "today" right if the app was left open overnight
 
     if (current && current !== "item") scrollMemory[current] = window.scrollY;
@@ -947,9 +856,6 @@
   window.addEventListener("hashchange", route);
   renderBrowse();
   renderDeals();
-  renderCaffeine();
-  renderProtein();
-  renderProteinGoal();
   renderPace();
   route();
 })();
