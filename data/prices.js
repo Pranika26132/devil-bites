@@ -330,6 +330,7 @@ window.PACE_DATA = {
     // ── Snacks ──
     { item: "Barebells protein bar", loc: "wuVending", price: 3.25 },
     { item: "Barebells protein bar", loc: "lobby", price: 3.99, checked: "2026-11-04" },
+    { item: "Barebells protein bar", loc: "wilsonCafe", price: 5.23 },
     { item: "Oikos yogurt", loc: "bellaUnion", price: 1.89, checked: "2026-10-19" },
     { item: "Oikos yogurt", loc: "trinityCafe", price: 3.09, checked: "2026-10-19" },
     { item: "Oikos yogurt", loc: "lobby", price: null },

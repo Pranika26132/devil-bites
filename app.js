@@ -196,7 +196,8 @@
   // ── Browse ──
   // Drinks / Snacks go by category; Energy / Protein / Healthy go by the item's
   // flags, so an item can be in two (Muscle Milk is a drink and high protein).
-  const FILTERS = ["All", "Drinks", "Snacks", "Energy", "Protein", "Healthy", "Low calorie"];
+  // "Deals" shows the deal cards (cheapest vs priciest spot) instead of item rows.
+  const FILTERS = ["All", "Drinks", "Snacks", "Deals", "Energy", "Protein", "Healthy", "Low calorie"];
   // Low calorie comes from the tags (data/tags.js). "variants" items (Coke, Pepsi…)
   // count only at spots where a diet / zero version was recorded.
   const LOW_CAL_FLAVOR = new RegExp(TAGS.lowCalFlavor || "\\bdiet\\b|\\bzero\\b", "i");
@@ -356,6 +357,36 @@
 
     const raw = $q.value.trim();
     $clear.hidden = !raw;
+
+    // "Best deals": the top 3 deals above the list (All chip, not searching).
+    const $best = $("best-deals");
+    $best.hidden = filter !== "All" || !!raw;
+    if (!$best.hidden) {
+      $best.innerHTML = `<div class="best-head"><p class="section-label">Best deals</p>
+        <button type="button" class="see-all" data-filter="Deals">See all deals ›</button></div>
+        <div class="cards">${deals.filter((d) => d.gap > 0).slice(0, 3).map(dealCard).join("")}</div>`;
+    }
+
+    // Deals chip: the deal cards, biggest saving first (no sort bar).
+    $sorts.parentElement.hidden = filter === "Deals";
+    if (filter === "Deals") {
+      $("protein-goal-box").hidden = true;
+      const list = raw ? deals.filter((d) => score(d.it, raw) > 0) : deals;
+      const gaps = list.filter((d) => d.gap > 0), same = list.filter((d) => d.gap === 0);
+      if (!list.length) {
+        $browseCount.textContent = "";
+        $browseList.innerHTML = `<div class="empty"><strong>No deals for “${esc(raw)}”.</strong><br>
+          <button type="button" class="chip" data-filter="All">Search everything</button></div>`;
+        return;
+      }
+      $browseCount.textContent = raw
+        ? `${list.length} ${list.length === 1 ? "deal matches" : "deals match"} “${raw}”`
+        : `${gaps.length} items cost less somewhere else`;
+      $browseList.innerHTML = gaps.map(dealCard).join("")
+        + (same.length ? `<p class="section-label">Same price everywhere (${same.length})</p>` + same.map(dealCard).join("") : "");
+      return;
+    }
+
     const rows = browseRows();
     const nItems = new Set(rows.map((r) => r.item)).size;
 
@@ -441,10 +472,33 @@
     }
   });
 
+  // ── My Usuals ──
+  // Items the user starred (☆ on an item page), saved on this device only.
+  // They get their own tab, and My Pace shows tips for them first.
+  let usuals = [];
+  try { const u = JSON.parse(store.get("usuals", "[]")); if (Array.isArray(u)) usuals = u.filter((n) => byName.has(n)); } catch { /* start empty */ }
+  const isUsual = (name) => usuals.includes(name);
+  function toggleUsual(name) {
+    usuals = isUsual(name) ? usuals.filter((n) => n !== name) : [...usuals, name];
+    store.set("usuals", JSON.stringify(usuals));
+  }
+  const starButton = (it) => {
+    const on = isUsual(it.name);
+    return `<button type="button" class="star${on ? " on" : ""}" data-star="${esc(it.name)}" aria-pressed="${on}">${
+      on ? "★ In My Usuals" : "☆ Add to My Usuals"}</button>`;
+  };
+
   // ── Item price comparison ──
   $itemDetail.addEventListener("click", (e) => {
     const more = e.target.closest("[data-more]");
-    if (more) toggleFlavors(more);
+    if (more) return toggleFlavors(more);
+    const star = e.target.closest("[data-star]");
+    if (star) {
+      toggleUsual(star.dataset.star);
+      star.outerHTML = starButton(byName.get(star.dataset.star));
+      renderUsuals();
+      renderPace();
+    }
   });
 
   function metaLine(e, extra) {
@@ -491,6 +545,7 @@
       ${n ? `<p class="count">${n} ${n === 1 ? "place" : "places"} ${isMeal ? "serve" : "sell"}${n === 1 ? "s" : ""} this</p>`
           : `<p class="count">Where it’s sold hasn’t been recorded yet</p>`}
       ${credit}</div></div>`;
+    html += starButton(it);
     const c = it.caffeine;
     if (c) {
       html += `<p class="caf-line"><strong>${cafAmount(c)} caffeine</strong>${c.size ? ` in ${esc(c.size)}` : ""}${
@@ -581,14 +636,43 @@
       </button>`;
   }
 
-  function renderDeals() {
-    const gaps = deals.filter((d) => d.gap > 0), same = deals.filter((d) => d.gap === 0);
-    $("deals-list").innerHTML = gaps.map(dealCard).join("")
-      + (same.length ? `<p class="section-label">Same price everywhere (${same.length})</p>` + same.map(dealCard).join("") : "");
+  // ── My Usuals tab ── each saved item at its cheapest spot (deal card when
+  // it's cheaper somewhere else, so the saving shows).
+  function renderUsuals() {
+    const $list = $("usuals-list");
+    if (!usuals.length) {
+      $list.innerHTML = `<div class="empty"><strong>Nothing saved yet.</strong><br>
+        Open any item and tap <strong>☆ Add to My Usuals</strong> to keep it here.</div>`;
+      return;
+    }
+    $list.innerHTML = usuals.map((n) => {
+      const it = byName.get(n);
+      const d = deals.find((x) => x.it === it);
+      if (d) return dealCard(d);
+      const { a } = itemFacts.get(it);
+      const e = a.priced[0] || it.entries[0];
+      return e ? browseRow({ ...e, it, item: it.name, mins: walkMins(e.loc), lowLabel: "" }) : "";
+    }).join("");
   }
-  $("deals-list").addEventListener("click", (e) => {
+  $("usuals-list").addEventListener("click", (e) => {
+    const more = e.target.closest("[data-more]");
+    if (more) return toggleFlavors(more);
     const b = e.target.closest("[data-item]");
-    if (b) location.hash = "#/deals/item/" + encodeURIComponent(b.dataset.item);
+    if (b) go("#/usuals/item/" + encodeURIComponent(b.dataset.item));
+  });
+  $("usuals-list").addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-item]")) {
+      e.preventDefault();
+      go("#/usuals/item/" + encodeURIComponent(e.target.dataset.item));
+    }
+  });
+
+  // Best deals block on Browse: "See all deals" picks the Deals chip, a card opens the item.
+  $("best-deals").addEventListener("click", (e) => {
+    const f = e.target.closest("[data-filter]");
+    if (f) { setFilter(f.dataset.filter); window.scrollTo(0, 0); return; }
+    const b = e.target.closest("[data-item]");
+    if (b) go("#/item/" + encodeURIComponent(b.dataset.item));
   });
 
   // ── Protein goal (shown on Browse with the Protein chip) ──
@@ -778,6 +862,40 @@
     $("pace-cal").innerHTML = html;
   }
 
+  // ── Ways to catch up (shown when behind) ──
+  // Up to 3 tips: the user's usuals that are cheaper somewhere first, then the
+  // biggest deals (cheap spot at least 50¢ and 15% cheaper). Tap → Browse search.
+  function wherePhrase(entries, price) {
+    const names = [...new Set(entries.filter((e) => e.price === price).map((e) => locName(e.loc)))];
+    if (names.every((x) => / vending$/.test(x))) return names.length > 1 ? "vending" : names[0];
+    return names.length > 2 ? `${names[0]} and others` : names.join(" or ");
+  }
+  function renderTips(p) {
+    const behind = p.ready && p.daily != null && p.diff != null && Math.round(p.diff) < 0;
+    const mine = usuals.map((n) => deals.find((d) => d.it.name === n && d.gap > 0)).filter(Boolean)
+      .sort((x, y) => y.gap - x.gap);
+    const big = deals.filter((d) => d.gap >= 0.5 && d.gap / d.a.max >= 0.15 && !isUsual(d.it.name));
+    const tips = [...mine, ...big].slice(0, 3);
+    $("pace-tips").hidden = !behind || !tips.length;
+    if ($("pace-tips").hidden) return;
+    $("pace-tips-list").innerHTML = tips.map((d) => {
+      const cheap = wherePhrase(d.a.priced, d.a.min), pricey = wherePhrase(d.a.priced, d.a.max);
+      const text = isUsual(d.it.name)
+        ? `<strong>Your usual ${esc(d.it.name)}:</strong> buy ${cheap === "vending" ? "in" : "at"} ${esc(cheap)},
+           <span class="save-text">save $${d.gap.toFixed(2)}</span>`
+        : `<strong>${esc(d.it.name)}:</strong> ${esc(cheap)} $${d.a.min.toFixed(2)} instead of ${esc(pricey)} $${d.a.max.toFixed(2)},
+           <span class="save-text">save $${d.gap.toFixed(2)}</span>`;
+      return `<li><button type="button" class="catchup-item" data-tip="${esc(d.it.name)}">
+        ${isUsual(d.it.name) ? `<span class="star-mark" aria-hidden="true">★</span>` : ""}<span class="tip-text">${text}</span>
+        <span class="tip-go" aria-hidden="true">›</span></button></li>`;
+    }).join("");
+  }
+  // Tapping a tip opens Browse searched to that item.
+  $("pace-tips-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-tip]");
+    if (b) openBrowseSearch(b.dataset.tip);
+  });
+
   function renderPace() {
     const p = computePace();
     const dayWord = p.weekdaysOnly ? "weekday" : "day";
@@ -813,6 +931,7 @@
           : `Stick to <strong>${dollars(p.daily)} a ${dayWord}</strong> until you leave and you’ll make it.`;
       }
     }
+    renderTips(p);
 
     $("pace-daily").classList.toggle("is-empty", !p.ready || p.daily == null);
     $("pace-sub").textContent = "You can spend today";
@@ -878,10 +997,10 @@
 
   // ── Screens & routing ──
   // Each screen has its own address so the phone's back button works:
-  //   #/browse  #/item/<name>  #/deals  #/deals/item/<name>
-  //   #/me   (old #/caffeine and #/protein links open Browse)
-  // An item opened from Deals lives under #/deals/… so the Deals tab stays lit.
-  const TAB_NAMES = { browse: "Browse", deals: "Deals", me: "My Pace" };
+  //   #/browse  #/item/<name>  #/me  #/usuals  #/usuals/item/<name>
+  //   (old #/deals links open Browse on the Deals chip; #/caffeine, #/protein open Browse)
+  // An item opened from My Usuals lives under #/usuals/… so that tab stays lit.
+  const TAB_NAMES = { browse: "Browse", me: "My Pace", usuals: "My Usuals" };
   const views = [...document.querySelectorAll(".view")];
   const scrollMemory = {};   // list screen -> scroll position
   let current = null;        // "browse", "deals", "item", …
@@ -890,10 +1009,22 @@
 
   function go(hash) { location.hash = hash; }
 
+  // Open Browse with the search box set to one item (used by My Pace tips).
+  function openBrowseSearch(name) {
+    $q.value = name;
+    filter = "All";
+    store.set("filter", filter);
+    if (!sortFits(sort, filter)) sort = "price-asc";
+    renderBrowse();
+    scrollMemory.browse = 0;
+    if (current === "browse") window.scrollTo(0, 0);
+    else go("#/browse");
+  }
+
   function route() {
     const h = location.hash.replace(/^#\/?/, "");
     let view = "browse", tab = "browse";
-    const m = h.match(/^(?:(deals|caffeine|protein)\/)?item\/(.+)$/);
+    const m = h.match(/^(?:(deals|caffeine|protein|usuals)\/)?item\/(.+)$/);
     if (m) {
       const it = byName.get(decodeURIComponent(m[2]));
       if (it) {
@@ -901,8 +1032,10 @@
         view = "item";
         tab = TAB_NAMES[m[1]] ? m[1] : "browse";
       }
-    } else if (["deals", "me"].includes(h)) view = tab = h;
+    } else if (["me", "usuals"].includes(h)) view = tab = h;
+    else if (h === "deals" && filter !== "Deals") setFilter("Deals"); // old Deals tab link
     if (view === "me") renderPace(); // keeps "today" right if the app was left open overnight
+    if (view === "usuals") renderUsuals();
 
     if (current && current !== "item") scrollMemory[current] = window.scrollY;
     if (view === "item") { if (current !== "item") prevList = current; }
@@ -935,7 +1068,7 @@
 
   window.addEventListener("hashchange", route);
   renderBrowse();
-  renderDeals();
+  renderUsuals();
   renderPace();
   route();
 })();
