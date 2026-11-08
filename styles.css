@@ -765,26 +765,3 @@ button:focus-visible, .chip:focus-visible, .tab:focus-visible {
 }
 .star:hover { border-color: var(--orange); }
 .star.on { background: #FCEBDC; border-color: #F3C9A3; color: #A4521A; }
-
-/* ── My Pace: Ways to catch up ── */
-.catchup { display: block; margin-bottom: 14px; }
-.catchup-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
-.catchup-item {
-  width: 100%;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  text-align: left;
-  padding: 12px 14px;
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  background: var(--cream);
-  font: 400 15px/1.45 var(--body);
-  color: var(--ink);
-  cursor: pointer;
-}
-.catchup-item:hover { border-color: var(--green); }
-.tip-text { flex: 1; min-width: 0; }
-.save-text { color: var(--green); font-weight: 800; }
-.star-mark { color: var(--orange); }
-.tip-go { flex: none; color: var(--green); font-size: 20px; font-weight: 800; }

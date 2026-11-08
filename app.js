@@ -474,7 +474,7 @@
 
   // ── My Usuals ──
   // Items the user starred (☆ on an item page), saved on this device only.
-  // They get their own tab, and My Pace shows tips for them first.
+  // They get their own tab.
   let usuals = [];
   try { const u = JSON.parse(store.get("usuals", "[]")); if (Array.isArray(u)) usuals = u.filter((n) => byName.has(n)); } catch { /* start empty */ }
   const isUsual = (name) => usuals.includes(name);
@@ -862,40 +862,6 @@
     $("pace-cal").innerHTML = html;
   }
 
-  // ── Ways to catch up (shown when behind) ──
-  // Up to 3 tips: the user's usuals that are cheaper somewhere first, then the
-  // biggest deals (cheap spot at least 50¢ and 15% cheaper). Tap → Browse search.
-  function wherePhrase(entries, price) {
-    const names = [...new Set(entries.filter((e) => e.price === price).map((e) => locName(e.loc)))];
-    if (names.every((x) => / vending$/.test(x))) return names.length > 1 ? "vending" : names[0];
-    return names.length > 2 ? `${names[0]} and others` : names.join(" or ");
-  }
-  function renderTips(p) {
-    const behind = p.ready && p.daily != null && p.diff != null && Math.round(p.diff) < 0;
-    const mine = usuals.map((n) => deals.find((d) => d.it.name === n && d.gap > 0)).filter(Boolean)
-      .sort((x, y) => y.gap - x.gap);
-    const big = deals.filter((d) => d.gap >= 0.5 && d.gap / d.a.max >= 0.15 && !isUsual(d.it.name));
-    const tips = [...mine, ...big].slice(0, 3);
-    $("pace-tips").hidden = !behind || !tips.length;
-    if ($("pace-tips").hidden) return;
-    $("pace-tips-list").innerHTML = tips.map((d) => {
-      const cheap = wherePhrase(d.a.priced, d.a.min), pricey = wherePhrase(d.a.priced, d.a.max);
-      const text = isUsual(d.it.name)
-        ? `<strong>Your usual ${esc(d.it.name)}:</strong> buy ${cheap === "vending" ? "in" : "at"} ${esc(cheap)},
-           <span class="save-text">save $${d.gap.toFixed(2)}</span>`
-        : `<strong>${esc(d.it.name)}:</strong> ${esc(cheap)} $${d.a.min.toFixed(2)} instead of ${esc(pricey)} $${d.a.max.toFixed(2)},
-           <span class="save-text">save $${d.gap.toFixed(2)}</span>`;
-      return `<li><button type="button" class="catchup-item" data-tip="${esc(d.it.name)}">
-        ${isUsual(d.it.name) ? `<span class="star-mark" aria-hidden="true">★</span>` : ""}<span class="tip-text">${text}</span>
-        <span class="tip-go" aria-hidden="true">›</span></button></li>`;
-    }).join("");
-  }
-  // Tapping a tip opens Browse searched to that item.
-  $("pace-tips-list").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-tip]");
-    if (b) openBrowseSearch(b.dataset.tip);
-  });
-
   function renderPace() {
     const p = computePace();
     const dayWord = p.weekdaysOnly ? "weekday" : "day";
@@ -931,7 +897,6 @@
           : `Stick to <strong>${dollars(p.daily)} a ${dayWord}</strong> until you leave and you’ll make it.`;
       }
     }
-    renderTips(p);
 
     $("pace-daily").classList.toggle("is-empty", !p.ready || p.daily == null);
     $("pace-sub").textContent = "You can spend today";
@@ -1008,18 +973,6 @@
   let prevList = null;       // list screen the open item was reached from
 
   function go(hash) { location.hash = hash; }
-
-  // Open Browse with the search box set to one item (used by My Pace tips).
-  function openBrowseSearch(name) {
-    $q.value = name;
-    filter = "All";
-    store.set("filter", filter);
-    if (!sortFits(sort, filter)) sort = "price-asc";
-    renderBrowse();
-    scrollMemory.browse = 0;
-    if (current === "browse") window.scrollTo(0, 0);
-    else go("#/browse");
-  }
 
   function route() {
     const h = location.hash.replace(/^#\/?/, "");
