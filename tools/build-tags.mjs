@@ -51,7 +51,7 @@ function readEdits() {
 export function buildTags({ quiet = false } = {}) {
   const { items, prices } = loadPrices();
   const flavors = {};
-  for (const p of prices) if (p.flavors) flavors[p.item] = (flavors[p.item] || "") + " " + p.flavors;
+  for (const p of prices) if (p.flavors) flavors[p.item] = (flavors[p.item] || "") + " " + [].concat(p.flavors).join(", ");
 
   const out = {};
   for (const [name, it] of Object.entries(items)) {

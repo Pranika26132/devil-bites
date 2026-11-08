@@ -11,6 +11,9 @@
     $t.outerHTML = `<a href="${FEEDBACK_URL}" target="_blank" rel="noopener">Tell us.</a>`;
   }
 
+  // A price entry's flavors as a list (data stores a list; older data a string).
+  const flavorList = (e) => (Array.isArray(e.flavors) ? e.flavors : e.flavors ? String(e.flavors).split(", ") : []);
+
   // ── Build one record per item, with all its price entries ──
   const catalog = Object.entries(items).map(([name, info]) => ({
     name,
@@ -26,13 +29,24 @@
   }));
   const byName = new Map(catalog.map((it) => [it.name, it]));
 
+  // Sales tax: each spot's rate lives in data/prices.js (locations → tax).
+  // From here on `price` is the after-tax price, so every comparison, cheapest
+  // spot, saving and ranking uses it. `shelf` keeps the sticker price for display.
+  const taxRate = (loc) => (loc && locations[loc] && locations[loc].tax) || 0;
+  const withTax = (price, rate) => Math.round(price * (1 + rate) * 100) / 100;
+
   for (const p of prices) {
     const it = byName.get(p.item);
     if (!it) { console.warn("Devil Bites: price for unknown item", p.item); continue; }
     if (p.loc && !locations[p.loc]) console.warn("Devil Bites: unknown location", p.loc);
-    it.entries.push(p);
-    if (p.flavors) it.flavors += " " + p.flavors;
+    const tax = taxRate(p.loc);
+    it.entries.push({ ...p, shelf: p.price, tax, price: p.price == null ? null : withTax(p.price, tax) });
+    if (p.flavors) it.flavors += " " + flavorList(p).join(", ");
   }
+
+  // "$1.99 + 2% tax" under an after-tax price ("" when there's no tax).
+  const shelfNote = (e) => (e.tax && e.shelf != null
+    ? `<span class="shelf">$${e.shelf.toFixed(2)} + ${+(e.tax * 100).toFixed(2)}% tax</span>` : "");
 
   // ── Search ──
   // Names, brands and tags (data/tags.js, built from the price sheet) via search.js.
@@ -198,7 +212,7 @@
     : f === "Low calorie" ? !!it.lowCal && (lowCalScope === "All" || it.category === lowCalScope)
     : it.category === f;
   // The diet / zero flavors at one spot ("Diet Coke, Coke Zero"), or "" if none.
-  const lowCalFlavors = (e) => (e.flavors || "").split(",").map((s) => s.trim()).filter((s) => LOW_CAL_FLAVOR.test(s)).join(", ");
+  const lowCalFlavors = (e) => flavorList(e).filter((s) => LOW_CAL_FLAVOR.test(s)).join(", ");
 
   // `only` sorts appear only with that chip selected.
   const SORTS = [
@@ -274,21 +288,50 @@
     const isBest = a.hasCompare && r.loc && r.price === a.min;
     const unpriced = r.price == null;
     const where = [locName(r.loc), r.size].filter(Boolean).join(" · ");
+    // A div (not a button) so the "See all" flavors button can sit inside it.
     return `
-      <button type="button" class="card row${unpriced ? " unpriced" : ""}" data-item="${esc(r.item)}">
+      <div class="card row${unpriced ? " unpriced" : ""}" role="link" tabindex="0" data-item="${esc(r.item)}">
         ${thumb(r.it)}
         <span class="card-main">
           <p class="place">${esc(r.item)}</p>
           <p class="where">${esc(where)}</p>
+          ${flavorLine(r)}
           ${isBest || r.it.caffeine || r.it.protein || r.lowLabel ? `<span class="tags">${isBest ? `<span class="tag">Best price</span>` : ""}${
             r.lowLabel ? `<span class="tag low">${esc(r.lowLabel)}</span>` : ""}${nutritionTags(r.it)}</span>` : ""}
         </span>
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
+          ${unpriced ? "" : shelfNote(r)}
           ${sort === "value" && !unpriced && gOf(r.it) ? `<span class="per">$${per20(r.price, gOf(r.it)).toFixed(2)} per 20g</span>` : ""}
           ${r.mins != null ? `<span class="walk">${walkLabel(r.mins)}</span>` : ""}
         </span>
-      </button>`;
+      </div>`;
+  }
+
+  // ── Flavors on a card ──
+  // "5 flavors: Blondies Chocolate Chip, Chocolate Chip, Dunkin' Mocha Latte, … See all"
+  const SHOWN_FLAVORS = 3;
+  const ASSORTED = /^(assorted|varying|various)\b/i;
+  function flavorLine(e) {
+    const list = flavorList(e);
+    if (!list.length) return "";
+    if (list.every((f) => ASSORTED.test(f))) return `<p class="flavors">Assorted flavors</p>`;
+    const label = list.length === 1 ? "Flavor" : `${list.length} flavors`;
+    if (list.length <= SHOWN_FLAVORS + 1) {
+      return `<p class="flavors"><strong>${label}:</strong> ${esc(list.join(", "))}</p>`;
+    }
+    return `<p class="flavors"><strong>${label}:</strong>
+      <span class="fl-short">${esc(list.slice(0, SHOWN_FLAVORS).join(", "))}, …</span>
+      <span class="fl-full" hidden>${esc(list.join(", "))}</span>
+      <button type="button" class="fl-more" data-more aria-expanded="false">See all</button></p>`;
+  }
+  function toggleFlavors(btn) {
+    const p = btn.closest(".flavors");
+    const open = btn.getAttribute("aria-expanded") !== "true";
+    p.querySelector(".fl-short").hidden = open;
+    p.querySelector(".fl-full").hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+    btn.textContent = open ? "Show less" : "See all";
   }
 
   function renderBrowse() {
@@ -383,19 +426,32 @@
     renderBrowse();
   });
   $browseList.addEventListener("click", (e) => {
+    const more = e.target.closest("[data-more]");
+    if (more) return toggleFlavors(more); // "See all" opens the list, not the item
     const f = e.target.closest("[data-filter]");
     if (f) return setFilter(f.dataset.filter);
     const b = e.target.closest("[data-item]");
     if (b && byName.has(b.dataset.item)) go("#/item/" + encodeURIComponent(b.dataset.item));
   });
+  // Cards are divs, so open them with Enter / Space too.
+  $browseList.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches(".row[data-item]")) {
+      e.preventDefault();
+      go("#/item/" + encodeURIComponent(e.target.dataset.item));
+    }
+  });
 
   // ── Item price comparison ──
+  $itemDetail.addEventListener("click", (e) => {
+    const more = e.target.closest("[data-more]");
+    if (more) toggleFlavors(more);
+  });
+
   function metaLine(e, extra) {
     const loc = e.loc && locations[e.loc];
     const bits = [];
     if (loc && loc.area) bits.push(loc.area);
     if (e.size) bits.push(e.size);
-    if (e.flavors) bits.push(e.flavors);
     if (e.checked) bits.push(`checked ${shortDate(e.checked)}`);
     let html = bits.length ? esc(bits.join(" · ")) : "";
     if (extra) html += (html ? "<br>" : "") + extra;
@@ -412,10 +468,12 @@
           <p class="place">${esc(locName(e.loc))}</p>
           ${isBest ? `<p class="best-label">Best price</p>` : ""}
           ${isBest && saveLine ? `<p class="save-line">${esc(saveLine)}</p>` : ""}
+          ${flavorLine(e)}
           ${metaLine(e, unpriced ? "Price not confirmed yet" : "")}
         </div>
         <span class="price-col">
-          <span class="price">${unpriced ? "—" : money(e.price)}</span>
+          <span class="price">${unpriced ? "—" : e.tax ? "$" + e.price.toFixed(2) : money(e.price)}</span>
+          ${unpriced ? "" : shelfNote(e)}
           ${mins != null ? `<span class="walk">${walkLabel(mins)}</span>` : ""}
         </span>
       </article>`;
@@ -512,12 +570,12 @@
           <span class="deal-row${save ? " cheap" : ""}">
             <span class="deal-label">${save ? "Cheapest" : "Price"}</span>
             <span class="deal-spot">${esc(save ? spotList(a.priced, a.min) : (d.places === 2 ? "Same at both spots" : `Same at all ${d.places} spots`))}</span>
-            <span class="deal-price">$${a.min.toFixed(2)}</span>
+            <span class="deal-price">$${a.min.toFixed(2)}${shelfNote(a.priced.find((e) => e.price === a.min))}</span>
           </span>
           ${save ? `<span class="deal-row">
             <span class="deal-label">Priciest</span>
             <span class="deal-spot">${esc(spotList(a.priced, a.max))}</span>
-            <span class="deal-price">$${a.max.toFixed(2)}</span>
+            <span class="deal-price">$${a.max.toFixed(2)}${shelfNote(a.priced.find((e) => e.price === a.max))}</span>
           </span>` : ""}
         </span>
       </button>`;

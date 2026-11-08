@@ -66,14 +66,17 @@
       const flavorText = words(e.flavors || "").join(" ");
       const exact = new Set([e.name, ...aka].flatMap((s) => [norm(s), words(s).join(" ")]));
       const compact = [e.name, ...aka, e.brand || ""].map((s) => norm(s).replace(/ /g, "")).filter(Boolean);
-      for (const w of [...nameish, ...tagWords]) vocab.add(w);
+      // Flavor words are real words too, so "toffee" is never "fixed" to "coffee".
+      for (const w of [...nameish, ...tagWords, ...flavorWords]) vocab.add(w);
       for (const w of tagWords) tagVocab.add(w);
       index.set(e.id, { nameish, tagWords, flavorWords, flavorText, exact, compact });
     }
     for (const g of groups.values()) for (const w of g) { vocab.add(w); tagVocab.add(w); }
     const vocabList = [...vocab];
 
-    // How a single query word matches one item: 2 name/brand, 1 tag/flavor, 0 none.
+    // How a single query word matches one item: 2 name/brand, 1 tag/flavor,
+    // WEAK = a food word found only in the flavors, 0 none.
+    const WEAK = 0.5;
     function wordLevel(x, t) {
       const isWord = vocab.has(t);
       const has = (set) => set.has(t) || (!isWord && [...set].some((w) => w.startsWith(t)));
@@ -81,13 +84,17 @@
       if (has(x.tagWords)) return 1;
       // Word groups ("candy" = "sweets") only reach tags, never names.
       for (const v of groups.get(t) || []) if (v !== t && x.tagWords.has(v)) return 1;
-      // Flavors count for words that aren't kinds of food ("cherry", not "sweet").
-      if (t.length >= 3 && !tagVocab.has(t) && x.flavorWords.has(t)) return 1;
+      // Flavors: words that aren't kinds of food ("cherry", "toffee") count on
+      // their own. Food words ("sweet", "crunch") count only next to a word that
+      // matched the name ("brownie brittle toffee crunch"), so "sweets" alone
+      // doesn't pull in Doritos "Spicy Sweet Chili".
+      if (t.length >= 3 && x.flavorWords.has(t)) return tagVocab.has(t) ? WEAK : 1;
       // Typo: only if the word (or a word starting with it) isn't in the data at all.
       if (t.length >= 4 && !isWord && !vocabList.some((w) => w.startsWith(t))) {
         const max = t.length >= 8 ? 2 : 1;
-        if ([...x.nameish].some((w) => distance(t, w, max) <= max)) return 2;
-        if ([...x.tagWords].some((w) => distance(t, w, max) <= max)) return 1;
+        const near = (set) => [...set].some((w) => distance(t, w, max) <= max);
+        if (near(x.nameish)) return 2;
+        if (near(x.tagWords) || near(x.flavorWords)) return 1;
       }
       return 0;
     }
@@ -98,11 +105,19 @@
       if (!x || !q) return 0;
       if (x.exact.has(q) || x.exact.has(words(q).join(" "))) return 3;
       let level = 2;
-      const qWords = words(q);
+      let nameHit = false;
+      // "and" is ignored so "cookies and cream" = "cookies & cream"
+      // (exact names like "Mike and Ike" are still matched above).
+      const qWords = words(q).filter((w) => w !== "and");
+      if (!qWords.length) return 0;
       for (const t of qWords) {
-        level = Math.min(level, wordLevel(x, t));
+        const l = wordLevel(x, t);
+        if (l === 2) nameHit = true;
+        level = Math.min(level, l);
         if (!level) break;
       }
+      // A food word found only in the flavors needs a name match alongside it.
+      if (level === WEAK) level = nameHit ? 1 : 0;
       // A whole phrase found in the flavors ("sweet tea", "cookies and cream")
       if (!level && qWords.length > 1 && x.flavorText.includes(qWords.join(" "))) level = 1;
       // "redbull", "mms": squashed-together names

@@ -22,10 +22,13 @@ import { buildTags } from "./build-tags.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "data", "prices.js");
-// Default sheet: the first of these that exists in data/.
-const DEFAULT_SHEETS = ["prices.csv", "prices - Sheet1.csv", "prices.tsv", "prices - Sheet1.tsv"];
-const SHEET = path.resolve(process.argv[2]
-  || path.join(ROOT, "data", DEFAULT_SHEETS.find((f) => fs.existsSync(path.join(ROOT, "data", f))) || DEFAULT_SHEETS[0]));
+// Default sheet: the newest data/prices….csv or .tsv (so "prices - Sheet1 (1).csv",
+// a fresh download, wins over an older copy).
+const newestSheet = () => fs.readdirSync(path.join(ROOT, "data"))
+  .filter((f) => /^prices.*\.(csv|tsv)$/i.test(f))
+  .map((f) => path.join(ROOT, "data", f))
+  .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)[0];
+const SHEET = path.resolve(process.argv[2] || newestSheet() || path.join(ROOT, "data", "prices.csv"));
 
 // ── Location spellings → location id (ids are defined in data/prices.js) ──
 const LOCATIONS = {
@@ -45,6 +48,10 @@ const LOCATIONS = {
   "wilson cafe": "wilsonCafe",
   "tandoor": "tandoor",
   "farmstead": "farmstead",
+  "wu (farmstead)": "farmstead",
+  "wu (skillet)": "skillet",
+  "skillet": "skillet",
+  "lobby shop": "lobby",
   "bryan center": "bryanCenter",
 };
 
@@ -259,6 +266,33 @@ const NAMES = {
   "toblerone": "Toblerone",
   "jelly belly jelly beans": "Jelly Belly jelly beans",
   "lindt truffles (single)": "Lindt truffle (single)",
+
+  // Added Nov 7 (third sheet)
+  "sargento string cheese": "Cheese stick",
+  "banana": "Banana",
+  "orange": "Orange",
+  "apple": "Apple",
+  "red apple": "Apple",
+  "fitzels protein pretzels": "FitZels protein pretzels",
+  "golden oreo minis": "Golden Oreo Minis",
+  "life savers hard candy": "Life Savers hard candy",
+  "hershey's miniatures": "Hershey’s Miniatures",
+  "sour punch gummies": "Sour Punch gummies",
+  "welch's fruit snacks": "Welch’s fruit snacks",
+  "welch's zero sugar fruit snacks": "Welch’s Zero Sugar fruit snacks",
+  "ritz": "Ritz crackers",
+  "chobani yogurt drinks": "Chobani Greek Yogurt Drink",
+  "orange juice": "Orange juice",
+  "20g protein shakes": "Protein shake, 20g (brand not recorded)",
+  "muscle milk protein shakes": "Muscle Milk",
+  "oikos yogurt cups": "Oikos yogurt",
+  "chobani yogurt cups": "Chobani yogurt cup",
+  "land o lakes butter": "Land O Lakes butter",
+  "philadelphia cream cheese": "Philadelphia cream cheese",
+  "babybel cheese": "Babybel cheese",
+  "cookie dough": "Cookie dough",
+  "silk almond milk": "Silk almond milk",
+  "eggs": "Eggs",
 };
 
 // Flavors that only appear in the sheet's item name ("Sour Skittles" → Sour).
@@ -286,6 +320,21 @@ const FLAVOR_FROM_NAME = {
 // Bella Union's $3.59 gummy bags are the big peg bags, so they're kept apart from
 // the small vending packs of the same brand (a different size).
 const PATTERNS = [
+  { re: /^tastelli konjac jelly\s*[–-]\s*(.+)$/i, name: "Tastelli konjac jelly drink" },
+  { re: /^amos peelerz\s*[–-]\s*(.+)$/i, name: "Amos Peelerz gummies" },
+  { re: /^wholly balls\s*[–-]\s*(.+)$/i, name: "Wholly Balls" },
+  { re: /^snack club\s*[–-]\s*(raw almonds)$/i, name: "Snack Club almonds" },
+  { re: /^snack club\s*[–-]\s*((?:un)?salted) cashews$/i, name: "Snack Club cashews" },
+  { re: /^snack club\s*[–-]\s*(salted) pistachios$/i, name: "Snack Club pistachios" },
+  { re: /^snack club\s*[–-]\s*(yogurt) trail mix$/i, name: "Snack Club yogurt trail mix" },
+  { re: /^snack club\s*[–-]\s*(cajun style) snack mix$/i, name: "Snack Club Cajun snack mix" },
+  { re: /^snack club\s*[–-]\s*(hot ones)$/i, name: "Snack Club Hot Ones" },
+  { re: /^flipz\s*[–-]\s*(.+)$/i, name: "Flipz chocolate-covered pretzels" },
+  { re: /^biena chickpea snacks\s*[–-]\s*(.+)$/i, name: "Biena chickpea snacks" },
+  { re: /^brownie brittle\s*[–-]\s*(.+)$/i, at: "lobby", name: "Brownie Brittle, Lobby Shop bag" },
+  { re: /^brownie brittle (.+)$/i, at: "bellaUnion", name: "Brownie Brittle" },
+  { re: /^sargento (?!string)(.+) cheese$/i, name: "Sargento cheese" },
+  { re: /^oh snap! (.+)$/i, name: "OH SNAP! pickles & veggies" },
   { re: /^haribo (.+)$/i, at: "bellaUnion", name: "Haribo gummies, peg bag" },
   { re: /^trolli (.+)$/i, at: "bellaUnion", name: "Trolli gummies, peg bag" },
   { re: /^warheads (.+)$/i, at: "bellaUnion", name: "Warheads, peg bag" },
@@ -338,6 +387,39 @@ const NEW_ITEMS = {
   "Toblerone":                       { category: "Snacks" },
   "Jelly Belly jelly beans":         { category: "Snacks", aka: ["jelly beans"] },
   "Lindt truffle (single)":          { category: "Snacks", aka: ["lindor"] },
+  "Crunch bar King Size":            { category: "Snacks" },
+  "Butterfinger King Size":          { category: "Snacks" },
+  "Banana":                          { category: "Snacks", healthy: true },
+  "Orange":                          { category: "Snacks", healthy: true },
+  "Apple":                           { category: "Snacks", healthy: true },
+  "Tastelli konjac jelly drink":     { category: "Drinks", aka: ["konjac"] },
+  "Amos Peelerz gummies":            { category: "Snacks", aka: ["peelerz"] },
+  "FitZels protein pretzels":        { category: "Snacks", highProtein: true, aka: ["fitzels"] },
+  "Wholly Balls":                    { category: "Snacks" },
+  "Snack Club almonds":              { category: "Snacks", healthy: true },
+  "Snack Club cashews":              { category: "Snacks", healthy: true },
+  "Snack Club pistachios":           { category: "Snacks", healthy: true },
+  "Snack Club yogurt trail mix":     { category: "Snacks" },
+  "Snack Club Cajun snack mix":      { category: "Snacks" },
+  "Snack Club Hot Ones":             { category: "Snacks" },
+  "Golden Oreo Minis":               { category: "Snacks" },
+  "Life Savers hard candy":          { category: "Snacks", aka: ["lifesavers"] },
+  "Hershey’s Miniatures":            { category: "Snacks", aka: ["hersheys"] },
+  "Sour Punch gummies":              { category: "Snacks" },
+  "Welch’s Zero Sugar fruit snacks": { category: "Snacks" },
+  "Flipz chocolate-covered pretzels": { category: "Snacks", aka: ["flipz"] },
+  "Biena chickpea snacks":           { category: "Snacks", aka: ["biena", "roasted chickpeas"] },
+  "Brownie Brittle, Lobby Shop bag": { category: "Snacks" },
+  "Ritz crackers":                   { category: "Snacks", aka: ["ritz"] },
+  "Protein shake, 20g (brand not recorded)": { category: "Drinks", highProtein: true },
+  "Babybel cheese":                  { category: "Snacks", healthy: true },
+  "OH SNAP! pickles & veggies":      { category: "Snacks", healthy: true, aka: ["oh snap", "pickles"] },
+  "Sargento cheese":                 { category: "Groceries", aka: ["cheese"] },
+  "Land O Lakes butter":             { category: "Groceries", aka: ["butter"] },
+  "Philadelphia cream cheese":       { category: "Groceries", aka: ["cream cheese"] },
+  "Cookie dough":                    { category: "Groceries" },
+  "Silk almond milk":                { category: "Drinks", aka: ["almond milk"] },
+  "Eggs":                            { category: "Groceries" },
 };
 
 // ── helpers ──
@@ -391,15 +473,26 @@ function cleanSize(s) {
 }
 
 // Tidy flavors: "a; b" → "a, b", drop notes like "unclear", "unverified".
-function cleanFlavors(s) {
-  if (!s) return null;
-  const parts = s.split(";").map((p) => p
-    .replace(/\(.*?\)/g, "")
-    .replace(/\s+at\s+[A-Z]?\d+[\w,\s]*$/i, "")
-    .replace(/\s+/g, " ").trim())
-    .filter((p) => p && !/unclear|unverified|unread|unreadable|relation|other (flavors|variants)/i.test(p))
-    .map((p) => (p === p.toLowerCase() ? p[0].toUpperCase() + p.slice(1) : p));
-  return parts.length ? [...new Set(parts)].join(", ") : null;
+// Flavors are kept as a list. One sheet cell can hold several, separated by ";".
+// Notes that aren't flavors ("Flavors unclear (D1-D4)", "Unverified") are set
+// aside and listed in flavor-report.md; they're never shown as flavors.
+const FLAVOR_NOTE = /unclear|unverified|unread|unreadable|relation|other (flavors|variants)/i;
+const flavorKey = (f) => f.toLowerCase().replace(/\s+/g, " ").trim();
+function splitFlavors(s) {
+  const flavors = [], notes = [];
+  for (let p of (s || "").split(";")) {
+    p = p.replace(/\s+at\s+[A-Z]?\d+(,\s*[A-Z]?\d+)*\s*$/i, "") // vending slot numbers ("at 122")
+      .replace(/\s+/g, " ").trim();
+    if (!p) continue;
+    if (FLAVOR_NOTE.test(p)) { notes.push(p); continue; }
+    flavors.push(p === p.toLowerCase() ? p[0].toUpperCase() + p.slice(1) : p);
+  }
+  return { flavors, notes };
+}
+// Adds flavors to a list, skipping ones already there (ignoring capitals).
+function addFlavors(list, more) {
+  for (const f of more) if (!list.some((x) => flavorKey(x) === flavorKey(f))) list.push(f);
+  return list;
 }
 
 function loadCurrent() {
@@ -417,6 +510,22 @@ function objLiteral(o) {
 // Sheet rows left out on purpose (item name → why). Reported every run.
 const SKIP = {
   "quiona cups": "duplicate of Kitchen & Love Quinoa Quick Cup",
+  "item": "a copy of the header row",
+};
+
+// Bella Union's $2.39 candy rows are the king-size bars (the "King-size candy
+// $2.39" shelf tag). Map them to the King Size items, which are separate sizes.
+const BELLA_KING_SIZE = {
+  "snickers": "Snickers King Size",
+  "classic m&ms": "M&M’s King Size",
+  "crunch bar": "Crunch bar King Size",
+  "butterfingers": "Butterfinger King Size",
+  "reeses": "Reese’s (type not recorded)",
+  "hersheys": "Hershey’s bar",
+  "skittles original": "Skittles",
+  "sour skittles": "Skittles",
+  "wild berry skittles": "Skittles",
+  "starburst full size": "Starburst",
 };
 
 // ── build ──
@@ -424,6 +533,7 @@ const current = loadCurrent();
 const sheet = readSheet(SHEET);
 const problems = [];
 const skipped = [];
+const sheetFlavorLog = []; // every row's flavors, for flavor-report.md
 const built = new Map(); // item|loc|price -> entry
 
 for (const r of sheet) {
@@ -431,25 +541,47 @@ for (const r of sheet) {
   const locId = r.loc ? LOCATIONS[key(r.loc)] : null;
   if (r.loc && !locId) { problems.push(`Line ${r.line}: unknown location “${r.loc}” (${r.item}); left out`); continue; }
   if (!r.item) { problems.push(`Line ${r.line}: no item name (${r.loc || "no place"}${r.price != null ? `, $${r.price}` : ""}); left out`); continue; }
-  const pat = PATTERNS.find((p) => p.re.test(r.item.trim()) && (!p.at || p.at === locId));
-  const rule = pat ? pat.name : NAMES[key(r.item)];
+  const king = locId === "bellaUnion" && r.price === 2.39 && BELLA_KING_SIZE[key(r.item)];
+  if (king && !r.size) r.size = /starburst/i.test(r.item) ? "Full Size" : "King Size";
+  const pat = !king && PATTERNS.find((p) => p.re.test(r.item.trim()) && (!p.at || p.at === locId));
+  const rule = king || (pat ? pat.name : NAMES[key(r.item)]);
   const name = typeof rule === "function" ? rule(r) : rule;
   if (!name) { problems.push(`Line ${r.line}: don’t know which item “${r.item}”${r.size ? ` (${r.size})` : ""} is; left out`); continue; }
   if (pat) r.patFlavor = r.item.trim().match(pat.re)[1].trim();
   if (r.price != null && !(r.price >= 0)) { problems.push(`Line ${r.line}: price “${r.price}” isn’t a number; left blank`); r.price = null; }
   const k = `${name}|${locId}|${r.price}`;
   const prev = built.get(k);
-  const fromName = cleanFlavors(r.patFlavor || FLAVOR_FROM_NAME[key(r.item)] || "");
-  const sheetFlavors = cleanFlavors(r.flavor);
-  const flavors = fromName && sheetFlavors ? `${fromName} ${sheetFlavors}` : fromName || sheetFlavors;
+  // Flavors from the Flavor column, plus any that only appear in the item name
+  // ("Sour Skittles", "Brownie Brittle Toffee Crunch").
+  const fromName = (r.patFlavor || FLAVOR_FROM_NAME[key(r.item)] || "").trim();
+  const sheet = splitFlavors(r.flavor);
+  let flavors = sheet.flavors;
+  if (fromName) flavors = flavors.length === 1 && FLAVOR_FROM_NAME[key(r.item)]
+    ? [`${fromName} ${flavors[0]}`]           // "Zero Sugar Ice" + "Cool Blueberry Lavender"
+    : addFlavors([fromName], flavors);
+  // What the sheet says, for the flavor check at the end
+  sheetFlavorLog.push({ item: name, flavors: [...flavors], notes: sheet.notes, line: r.line });
   const size = cleanSize(r.size) || sizeFromName(r.item);
   if (prev) {
-    // Same item, place and price: merge flavors, keep the latest date.
-    if (flavors) prev.flavors = cleanFlavors([prev.flavors, flavors].filter(Boolean).join(";").replace(/, /g, ";"));
+    // Same item, place and price: one card with all the flavors; keep the latest date.
+    addFlavors(prev.flavors, flavors);
     if (r.date && (!prev.checked || r.date > prev.checked)) prev.checked = r.date;
     if (!prev.size && size) prev.size = size;
   } else {
-    built.set(k, { item: name, loc: locId, price: r.price, size, flavors, checked: r.date, _line: r.line });
+    built.set(k, { item: name, loc: locId, price: r.price, size, flavors: addFlavors([], flavors), checked: r.date, _line: r.line });
+  }
+}
+
+// A blank-price row for an item that already has a price at the same spot is
+// just a repeat (e.g. the fridge list): drop it, keeping its flavors.
+const droppedRepeats = [];
+for (const [k, e] of [...built]) {
+  if (e.price != null) continue;
+  const priced = [...built.values()].find((x) => x.item === e.item && x.loc === e.loc && x.price != null);
+  if (priced) {
+    addFlavors(priced.flavors, e.flavors);
+    built.delete(k);
+    droppedRepeats.push(`Line ${e._line}: ${e.item} (already priced at ${current.locations[e.loc]?.name || e.loc})`);
   }
 }
 
@@ -486,7 +618,7 @@ const src = fs.readFileSync(OUT, "utf8");
 const locStart = src.indexOf("  // lat/lng power");
 const locEnd = src.indexOf("\n  },\n", src.indexOf("  locations: {")) + 6;
 const locationsBlock = src.slice(locStart, locEnd);
-const catOrder = ["Drinks", "Snacks", "Meals"];
+const catOrder = ["Drinks", "Snacks", "Meals", "Groceries"];
 const itemNames = Object.keys(items).sort((a, b) =>
   catOrder.indexOf(items[a].category) - catOrder.indexOf(items[b].category));
 const entries = [...built.values()].sort((a, b) =>
@@ -495,7 +627,7 @@ const entries = [...built.values()].sort((a, b) =>
 const priceLine = (e) => {
   const o = { item: e.item, loc: e.loc, price: e.price };
   if (e.size) o.size = e.size;
-  if (e.flavors) o.flavors = e.flavors;
+  if (e.flavors && e.flavors.length) o.flavors = [...e.flavors].sort((a, b) => a.localeCompare(b));
   if (e.checked) o.checked = e.checked;
   if (e.note) o.note = e.note;
   return "    " + objLiteral(o) + ",";
@@ -512,7 +644,7 @@ let out = `/*
 */
 window.PACE_DATA = {
 ${locationsBlock}
-  // category: Drinks · Snacks · Meals (Meals shows under All)
+  // category: Drinks · Snacks · Meals · Groceries (Meals and Groceries show under All)
   // energy / highProtein / healthy: true puts the item under that Browse chip too
   // aka: other spellings people might search for
   // caffeine: typical mg for the size shown (max = top of a range when the flavor
@@ -564,6 +696,42 @@ for (const n of Object.keys(items)) if (!current.items[n]) report.newItems.push(
 for (const n of Object.keys(current.items)) if (!items[n]) report.droppedItems.push(n);
 
 fs.writeFileSync(OUT, out);
+
+// ── Flavor check: sheet vs app, for every item → flavor-report.md ──
+const flavorRows = [];
+const flavorMismatches = [];
+for (const name of itemNames) {
+  const sheetSet = new Map(), notes = [];
+  for (const l of sheetFlavorLog.filter((x) => x.item === name)) {
+    for (const f of l.flavors) sheetSet.set(flavorKey(f), f);
+    notes.push(...l.notes);
+  }
+  const appSet = new Map();
+  for (const e of entries.filter((x) => x.item === name)) for (const f of e.flavors || []) appSet.set(flavorKey(f), f);
+  const missing = [...sheetSet.keys()].filter((k) => !appSet.has(k)).map((k) => sheetSet.get(k));
+  const extra = [...appSet.keys()].filter((k) => !sheetSet.has(k)).map((k) => appSet.get(k));
+  const ok = !missing.length && !extra.length;
+  if (!ok) flavorMismatches.push(`${name}: sheet ${sheetSet.size}, app ${appSet.size}` +
+    (missing.length ? ` · missing in app: ${missing.join(", ")}` : "") + (extra.length ? ` · only in app: ${extra.join(", ")}` : ""));
+  if (sheetSet.size || appSet.size || notes.length) {
+    flavorRows.push(`| ${name} | ${sheetSet.size} | ${appSet.size} | ${ok ? "✓" : "✗"} | ${[...appSet.values()].sort((a, b) => a.localeCompare(b)).join(", ")}${
+      notes.length ? ` · _notes set aside: ${[...new Set(notes)].join("; ")}_` : ""} |`);
+  }
+}
+fs.writeFileSync(path.join(ROOT, "flavor-report.md"), `# Flavor check
+
+Generated by \`node tools/build-prices.mjs\` from ${path.basename(SHEET)}.
+Sheet = distinct flavors in the sheet (Flavor column, split on ";", plus flavors in the
+item name). App = distinct flavors the app shows. Notes that aren't flavors
+(“Flavors unclear…”, “Unverified”) are set aside and listed in italics.
+
+**${flavorRows.length} items with flavors · ${flavorMismatches.length} mismatches**
+
+| Item | Sheet | App | Match | Flavors in the app |
+|---|---|---|---|---|
+${flavorRows.join("\n")}
+`);
+
 const section = (t, list) => list.length ? `\n${t} (${list.length})\n` + list.map((x) => "  - " + x).join("\n") : "";
 console.log(`Read ${sheet.length} rows from ${path.relative(ROOT, SHEET)} → ${entries.length} prices, ${Object.keys(items).length} items.`);
 console.log(
@@ -573,7 +741,9 @@ console.log(
   section("Removed (not in the sheet any more)", report.removed) +
   section("New items", report.newItems) +
   section("Items dropped (no rows left)", report.droppedItems) +
+  section("Blank repeats dropped", droppedRepeats) +
   section("Skipped on purpose", skipped) +
+  section("Flavor mismatches (see flavor-report.md)", flavorMismatches) +
   section("Problems", problems));
 
 // Search tags follow the new item list (data/tags.js, tag-report.md).

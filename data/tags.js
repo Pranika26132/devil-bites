@@ -218,20 +218,6 @@ window.PACE_TAGS = {
     "drink"
    ]
   },
-  "Bottled water, blue label (brand unread)": {
-   "brand": null,
-   "tags": [
-    "water",
-    "bottled water",
-    "drink",
-    "low calorie",
-    "low cal",
-    "zero sugar",
-    "diet",
-    "light"
-   ],
-   "lowCal": "all"
-  },
   "Naked Juice": {
    "brand": "Naked",
    "tags": [
@@ -727,6 +713,34 @@ window.PACE_TAGS = {
     "drink",
     "protein",
     "healthy"
+   ]
+  },
+  "Tastelli konjac jelly drink": {
+   "brand": "Tastelli",
+   "tags": [
+    "tastelli",
+    "jelly drink",
+    "konjac",
+    "drink"
+   ]
+  },
+  "Protein shake, 20g (brand not recorded)": {
+   "brand": null,
+   "tags": [
+    "protein shake",
+    "protein drink",
+    "drink",
+    "protein"
+   ]
+  },
+  "Silk almond milk": {
+   "brand": "Silk",
+   "tags": [
+    "silk",
+    "almond milk",
+    "milk",
+    "dairy-free",
+    "drink"
    ]
   },
   "Barebells protein bar": {
@@ -1692,15 +1706,6 @@ window.PACE_TAGS = {
     "fruity"
    ]
   },
-  "King-size candy bar (shelf tag)": {
-   "brand": null,
-   "tags": [
-    "chocolate",
-    "candy bar",
-    "candy",
-    "sweets"
-   ]
-  },
   "Lindt or Ghirardelli chocolate (shelf tag)": {
    "brand": null,
    "tags": [
@@ -1841,6 +1846,241 @@ window.PACE_TAGS = {
     "sweets"
    ]
   },
+  "Crunch bar King Size": {
+   "brand": "Crunch",
+   "tags": [
+    "crunch",
+    "crisped rice",
+    "chocolate",
+    "candy bar",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Butterfinger King Size": {
+   "brand": "Butterfinger",
+   "tags": [
+    "butterfinger",
+    "peanut butter",
+    "chocolate",
+    "candy bar",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Banana": {
+   "brand": null,
+   "tags": [
+    "fruit",
+    "fresh fruit",
+    "healthy"
+   ]
+  },
+  "Orange": {
+   "brand": null,
+   "tags": [
+    "fruit",
+    "fresh fruit",
+    "healthy"
+   ]
+  },
+  "Apple": {
+   "brand": null,
+   "tags": [
+    "fruit",
+    "fresh fruit",
+    "healthy"
+   ]
+  },
+  "Amos Peelerz gummies": {
+   "brand": "Amos",
+   "tags": [
+    "amos",
+    "gummies",
+    "candy",
+    "sweets",
+    "fruity"
+   ]
+  },
+  "FitZels protein pretzels": {
+   "brand": "FitZels",
+   "tags": [
+    "fitzels",
+    "pretzels",
+    "snack",
+    "protein"
+   ]
+  },
+  "Wholly Balls": {
+   "brand": "Wholly Balls",
+   "tags": [
+    "wholly balls"
+   ]
+  },
+  "Snack Club almonds": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "nuts",
+    "almonds",
+    "snack",
+    "healthy"
+   ]
+  },
+  "Snack Club cashews": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "nuts",
+    "cashews",
+    "snack",
+    "healthy"
+   ]
+  },
+  "Snack Club pistachios": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "nuts",
+    "pistachios",
+    "snack",
+    "healthy"
+   ]
+  },
+  "Snack Club yogurt trail mix": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "trail mix",
+    "snack mix",
+    "nuts",
+    "chocolate",
+    "m&m’s",
+    "snack"
+   ]
+  },
+  "Snack Club Cajun snack mix": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "snack mix",
+    "spicy",
+    "salty",
+    "snack"
+   ]
+  },
+  "Snack Club Hot Ones": {
+   "brand": "Snack Club",
+   "tags": [
+    "snack club",
+    "spicy",
+    "snack"
+   ]
+  },
+  "Golden Oreo Minis": {
+   "brand": "Oreo",
+   "tags": [
+    "oreo",
+    "cookies",
+    "vanilla",
+    "sweets"
+   ]
+  },
+  "Life Savers hard candy": {
+   "brand": "Life Savers",
+   "tags": [
+    "life savers",
+    "hard candy",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Hershey’s Miniatures": {
+   "brand": "Hershey’s",
+   "tags": [
+    "hershey’s",
+    "chocolate",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Sour Punch gummies": {
+   "brand": "Sour Punch",
+   "tags": [
+    "sour punch",
+    "gummies",
+    "candy",
+    "sweets",
+    "sour candy"
+   ]
+  },
+  "Welch’s Zero Sugar fruit snacks": {
+   "brand": "Welch’s",
+   "tags": [
+    "welch’s",
+    "fruit snacks",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Flipz chocolate-covered pretzels": {
+   "brand": "Flipz",
+   "tags": [
+    "flipz",
+    "pretzels",
+    "snack",
+    "chocolate covered pretzels",
+    "chocolate",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Biena chickpea snacks": {
+   "brand": "Biena",
+   "tags": [
+    "biena",
+    "chickpeas",
+    "roasted chickpeas",
+    "snack"
+   ]
+  },
+  "Brownie Brittle, Lobby Shop bag": {
+   "brand": "Brownie Brittle",
+   "tags": [
+    "brownie brittle",
+    "brownie",
+    "chocolate",
+    "sweets"
+   ]
+  },
+  "Ritz crackers": {
+   "brand": "Ritz",
+   "tags": [
+    "ritz",
+    "crackers",
+    "snack"
+   ]
+  },
+  "Babybel cheese": {
+   "brand": "Babybel",
+   "tags": [
+    "babybel",
+    "cheese",
+    "dairy",
+    "healthy"
+   ]
+  },
+  "OH SNAP! pickles & veggies": {
+   "brand": "OH SNAP!",
+   "tags": [
+    "oh snap!",
+    "pickles",
+    "veggies",
+    "vegetables",
+    "snack",
+    "healthy"
+   ]
+  },
   "Kitchen & Love Quinoa Quick Cup": {
    "brand": "Kitchen & Love",
    "tags": [
@@ -1849,6 +2089,47 @@ window.PACE_TAGS = {
     "meal",
     "grain bowl",
     "healthy"
+   ]
+  },
+  "Land O Lakes butter": {
+   "brand": "Land O Lakes",
+   "tags": [
+    "land o lakes",
+    "butter",
+    "dairy",
+    "groceries"
+   ]
+  },
+  "Sargento cheese": {
+   "brand": "Sargento",
+   "tags": [
+    "sargento",
+    "cheese",
+    "dairy"
+   ]
+  },
+  "Philadelphia cream cheese": {
+   "brand": "Philadelphia",
+   "tags": [
+    "philadelphia",
+    "cream cheese",
+    "dairy",
+    "groceries"
+   ]
+  },
+  "Cookie dough": {
+   "brand": null,
+   "tags": [
+    "cookie dough",
+    "baking",
+    "groceries"
+   ]
+  },
+  "Eggs": {
+   "brand": null,
+   "tags": [
+    "eggs",
+    "groceries"
    ]
   }
  }

@@ -45,6 +45,11 @@ export const BRANDS = [
   ["Milka", ["milka"]], ["BarkTHINS", ["barkthins"]], ["Warheads", ["warheads"]],
   ["Brownie Brittle", ["brownie brittle"]], ["Toblerone", ["toblerone"]], ["Jelly Belly", ["jelly belly"]],
   ["Kitchen & Love", ["kitchen & love"]],
+  ["Tastelli", ["tastelli"]], ["Amos", ["amos peelerz"]], ["FitZels", ["fitzels"]],
+  ["Wholly Balls", ["wholly balls"]], ["Snack Club", ["snack club"]], ["Life Savers", ["life savers"]],
+  ["Sour Punch", ["sour punch"]], ["Flipz", ["flipz"]], ["Biena", ["biena"]], ["Ritz", ["ritz"]],
+  ["Babybel", ["babybel"]], ["Sargento", ["sargento"]], ["Philadelphia", ["philadelphia"]],
+  ["Land O Lakes", ["land o lakes"]], ["Silk", ["silk almond"]], ["OH SNAP!", ["oh snap!"]],
 ];
 
 // ── Product-type tags ── [regex on the lowercase item name, tags]. Every matching rule adds its tags.
@@ -147,6 +152,32 @@ export const RULES = [
   [/barkthins/, ["chocolate", "dark chocolate", "almonds", ...CANDY]],
   [/gum\b|gum,/, GUM],
   [/altoids|ice breakers/, MINTS],
+
+  // Added with the third sheet
+  [/^(banana|orange|apple)$/, ["fruit", "fresh fruit"]],
+  [/konjac/, ["jelly drink", "konjac"]],
+  [/amos peelerz/, ["fruity", ...GUMMY]],
+  [/fitzels/, ["pretzels", "snack"]],
+  [/snack club almonds/, ["nuts", "almonds", "snack"]],
+  [/snack club cashews/, ["nuts", "cashews", "snack"]],
+  [/snack club pistachios/, ["nuts", "pistachios", "snack"]],
+  [/yogurt trail mix/, ["trail mix", "snack mix", "nuts", "snack"]],
+  [/cajun snack mix/, ["snack mix", "spicy", "salty", "snack"]],
+  [/hot ones/, ["spicy", "snack"]],
+  [/golden oreo/, ["cookies", "vanilla", "sweets"]],
+  [/life savers/, ["hard candy", ...CANDY]],
+  [/hershey’s miniatures/, ["chocolate", ...CANDY]],
+  [/flipz/, ["pretzels", "chocolate covered pretzels", "chocolate", ...CANDY]],
+  [/biena/, ["chickpeas", "roasted chickpeas", "snack"]],
+  [/ritz/, ["crackers", "snack"]],
+  [/protein shake, 20g/, ["protein shake", "protein drink"]],
+  [/babybel|sargento cheese/, ["cheese", "dairy"]],
+  [/cream cheese/, ["cream cheese", "dairy", "groceries"]],
+  [/butter$/, ["butter", "dairy", "groceries"]],
+  [/^eggs$/, ["eggs", "groceries"]],
+  [/cookie dough/, ["cookie dough", "baking", "groceries"]],
+  [/almond milk/, ["almond milk", "milk", "dairy-free"]],
+  [/oh snap!/, ["pickles", "veggies", "vegetables", "snack"]],
 
   // Meals
   [/quinoa/, ["quinoa", "meal", "grain bowl"]],
