@@ -18,7 +18,7 @@ window.PACE_DATA = {
     wuCafe:         { name: "West Union café", tax: 0, lat: 36.00108780707493, lng: -78.93924924627412 },  // tax: confirm
     bellaUnion:     { name: "Bella Union", tax: 0.02, lat: 35.999447140847785, lng: -78.93699803753199 },
     trinityCafe:    { name: "Trinity Café", tax: 0, lat: 36.0077398746094, lng: -78.91386068250522 },  // tax: confirm
-    wilsonCafe:     { name: "Wilson Café", tax: 0 },                         // coordinates needed; tax not checked
+    wilsonCafe:     { name: "Wilson Café", tax: 0.02 },                         // coordinates needed
     tandoor:        { name: "Tandoor", tax: 0 },                             // coordinates needed; tax not checked
     farmstead:      { name: "Farmstead", tax: 0, area: "West Union", lat: 36.00108780707493, lng: -78.93924924627412 },  // tax not checked
     skillet:        { name: "Skillet", tax: 0, area: "West Union", lat: 36.00108780707493, lng: -78.93924924627412 },  // tax not checked
@@ -101,10 +101,10 @@ window.PACE_DATA = {
     "Quest frosted cookie": { category: "Snacks", highProtein: true },
     "Quest peanut butter cups": { category: "Snacks", highProtein: true, protein: { g: 11 } },
     "think! protein bar": { category: "Snacks", highProtein: true, protein: { g: 20 } },
-    "PowerBar": { category: "Snacks", highProtein: true },
-    "Beef jerky": { category: "Snacks", highProtein: true, aka: ["jerky"] },
-    "Chobani yogurt cup": { category: "Snacks", highProtein: true, healthy: true, aka: ["greek yogurt"] },
-    "Cheese stick": { category: "Snacks", highProtein: true, healthy: true, aka: ["string cheese"] },
+    "PowerBar": { category: "Snacks", highProtein: true, protein: { g: 13 } },
+    "Beef jerky": { category: "Snacks", highProtein: true, aka: ["jerky"], protein: { g: 9.4 } },
+    "Chobani yogurt cup": { category: "Snacks", highProtein: true, healthy: true, aka: ["greek yogurt"], protein: { g: 12 } },
+    "Cheese stick": { category: "Snacks", highProtein: true, healthy: true, aka: ["string cheese"], protein: { g: 7 } },
     "Clif Bar": { category: "Snacks", highProtein: true, aka: ["cliff bar"], protein: { g: 10 } },
     "Kind bar": { category: "Snacks" },
     "belVita breakfast biscuits": { category: "Snacks" },
@@ -330,7 +330,7 @@ window.PACE_DATA = {
     // ── Snacks ──
     { item: "Barebells protein bar", loc: "wuVending", price: 3.25 },
     { item: "Barebells protein bar", loc: "lobby", price: 3.99, checked: "2026-11-04" },
-    { item: "Barebells protein bar", loc: "wilsonCafe", price: 5.23 },
+    { item: "Barebells protein bar", loc: "wilsonCafe", price: 5.13 },
     { item: "Oikos yogurt", loc: "bellaUnion", price: 1.89, checked: "2026-10-19" },
     { item: "Oikos yogurt", loc: "trinityCafe", price: 3.09, checked: "2026-10-19" },
     { item: "Oikos yogurt", loc: "lobby", price: null },

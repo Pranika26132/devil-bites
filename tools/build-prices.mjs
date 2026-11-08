@@ -422,8 +422,25 @@ const NEW_ITEMS = {
   "Eggs":                            { category: "Groceries" },
 };
 
+// Item info set here wins over what's in data/prices.js (merged in, other fields kept).
+// protein: grams per item, from the package label.
+const ITEM_INFO = {
+  "Chobani yogurt cup": { protein: { g: 12 } },
+  "Cheese stick":       { protein: { g: 7 } },
+  "Beef jerky":         { protein: { g: 9.4 } },
+  "PowerBar":           { protein: { g: 13 } },
+};
+
+// Sales tax by location id. Written into the locations block of data/prices.js
+// (the app adds it to shelf prices from the sheet).
+const LOCATION_TAX = {
+  lobby: 0.02,
+  bellaUnion: 0.02,
+  wilsonCafe: 0.02,
+};
+
 // ── helpers ──
-const key = (s) => s.trim().replace(/\s+/g, " ").replace(/['`]/g, (c) => c).toLowerCase();
+const key =(s) => s.trim().replace(/\s+/g, " ").replace(/['`]/g, (c) => c).toLowerCase();
 
 function readSheet(file) {
   const text = fs.readFileSync(file, "utf8").replace(/^﻿/, "");
@@ -612,12 +629,22 @@ for (const name of used) {
   if (!NEW_ITEMS[name]) { problems.push(`“${name}” has no category set up (NEW_ITEMS); used Snacks`); items[name] = { category: "Snacks" }; }
   else items[name] = NEW_ITEMS[name];
 }
+for (const [name, info] of Object.entries(ITEM_INFO)) {
+  if (items[name]) items[name] = { ...items[name], ...info };
+  else problems.push(`ITEM_INFO: “${name}” isn’t an item in the sheet; ignored`);
+}
 
 // ── write data/prices.js (locations block is kept exactly as it is) ──
 const src = fs.readFileSync(OUT, "utf8");
 const locStart = src.indexOf("  // lat/lng power");
 const locEnd = src.indexOf("\n  },\n", src.indexOf("  locations: {")) + 6;
-const locationsBlock = src.slice(locStart, locEnd);
+let locationsBlock = src.slice(locStart, locEnd);
+for (const [id, rate] of Object.entries(LOCATION_TAX)) {
+  const line = new RegExp(`^(\\s*${id}:\\s*\\{[^}\\n]*?\\btax:\\s*)[\\d.]+([^\\n]*)$`, "m");
+  if (!line.test(locationsBlock)) { problems.push(`LOCATION_TAX: no location “${id}”; ignored`); continue; }
+  locationsBlock = locationsBlock.replace(line, (_, a, rest) =>
+    a + rate + rest.replace(/;?\s*tax not checked/, "").replace(/\s*\/\/\s*$/, ""));
+}
 const catOrder = ["Drinks", "Snacks", "Meals", "Groceries"];
 const itemNames = Object.keys(items).sort((a, b) =>
   catOrder.indexOf(items[a].category) - catOrder.indexOf(items[b].category));

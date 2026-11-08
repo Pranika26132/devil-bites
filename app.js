@@ -686,15 +686,19 @@
     });
 
   // Cheapest combo reaching at least `goal` grams, using up to MAX_EACH of each
-  // item. Small 0/1 knapsack over grams (capped at the goal).
-  function cheapestCombo(goal) {
+  // item. Small 0/1 knapsack over tenths of a gram (some labels say 9.4g),
+  // capped at the goal.
+  const tenths = (g) => Math.round(g * 10);
+  const grams = (g) => Math.round(g * 10) / 10; // tidy display: 28.2, not 28.200000000000003
+  function cheapestCombo(goalG) {
+    const goal = tenths(goalG);
     const units = proteinItems.flatMap((r) => Array.from({ length: MAX_EACH }, () => r));
     const best = new Array(goal + 1).fill(null); // best[g] = { cost, picks: [index…] }
     best[0] = { cost: 0, picks: [] };
     units.forEach((u, i) => {
       for (let g = goal; g >= 0; g--) {
         if (!best[g]) continue;
-        const ng = Math.min(goal, g + u.g);
+        const ng = Math.min(goal, g + tenths(u.g));
         const cost = best[g].cost + u.price;
         const cur = best[ng];
         if (!cur || cost < cur.cost - 1e-9 || (Math.abs(cost - cur.cost) < 1e-9 && best[g].picks.length + 1 < cur.picks.length)) {
@@ -707,7 +711,7 @@
     const counts = new Map();
     for (const i of hit.picks) counts.set(units[i], (counts.get(units[i]) || 0) + 1);
     const lines = [...counts].map(([r, n]) => ({ r, n })).sort((x, y) => y.n * y.r.g - x.n * x.r.g);
-    return { cost: hit.cost, grams: lines.reduce((s, l) => s + l.n * l.r.g, 0), lines };
+    return { cost: hit.cost, grams: grams(lines.reduce((s, l) => s + l.n * l.r.g, 0)), lines };
   }
 
   function renderProteinGoal() {
@@ -715,7 +719,7 @@
     const $out = $("protein-combo");
     if (!Number.isFinite(raw) || raw < 1) { $out.innerHTML = `<p class="goal-note">Enter how many grams you want.</p>`; return; }
     const goal = Math.min(raw, 400);
-    const maxG = proteinItems.reduce((s, r) => s + r.g * MAX_EACH, 0);
+    const maxG = grams(proteinItems.reduce((s, r) => s + r.g * MAX_EACH, 0));
     const combo = goal <= maxG ? cheapestCombo(goal) : null;
     if (!combo) {
       $out.innerHTML = `<p class="goal-note">That’s more than ${MAX_EACH} of every protein item adds up to (${maxG}g).</p>`;
@@ -725,7 +729,7 @@
       <p class="goal-total">${combo.grams}g for ${dollars(combo.cost)}</p>
       <ul class="goal-list">
         ${combo.lines.map(({ r, n }) => `<li>
-          <span>${n > 1 ? `${n} × ` : ""}${esc(r.it.name)} <span class="goal-g">${r.g * n}g</span></span>
+          <span>${n > 1 ? `${n} × ` : ""}${esc(r.it.name)} <span class="goal-g">${grams(r.g * n)}g</span></span>
           <span class="goal-where">${esc(spotList(r.a.priced, r.price))} · ${dollars(r.price * n)}</span>
         </li>`).join("")}
       </ul>`;
