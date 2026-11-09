@@ -48,6 +48,17 @@
   const shelfNote = (e) => (e.tax && e.shelf != null
     ? `<span class="shelf">$${e.shelf.toFixed(2)} + ${+(e.tax * 100).toFixed(2)}% tax</span>` : "");
 
+  // Gum: after-tax price per stick, from the pack size ("14 sticks", "28-pack").
+  // null for anything that isn't gum or has no count.
+  const perStick = (e) => {
+    const sticks = /\bgum\b/i.test(e.item) && e.price != null && parseInt(e.size, 10);
+    return sticks ? e.price / sticks : null;
+  };
+  const perStickNote = (e) => {
+    const v = perStick(e);
+    return v == null ? "" : `<span class="per">$${v.toFixed(2)} per stick</span>`;
+  };
+
   // ── Search ──
   // Names, brands and tags (data/tags.js, built from the price sheet) via search.js.
   // score() → 3 exact name · 2 name/brand · 1 tag · 0 no match.
@@ -274,6 +285,9 @@
       bySort = (a, b) => noDistanceLast(a, b) || a.mins - b.mins || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     } else if (sort === "price-desc") {
       bySort = (a, b) => unpricedLast(a, b) || b.price - a.price || byNameNumeric(a, b);
+    } else if (q && rows.some((r) => perStick(r) != null)) {
+      // Searching for gum: cheapest per stick first, anything without a count after.
+      bySort = (a, b) => missingLast(perStick)(a, b) || perStick(a) - perStick(b) || unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
     } else {
       // Price low to high (the default)
       bySort = (a, b) => unpricedLast(a, b) || a.price - b.price || byNameNumeric(a, b);
@@ -303,6 +317,7 @@
         <span class="price-col">
           <span class="price">${unpriced ? "No price yet" : "$" + r.price.toFixed(2)}</span>
           ${unpriced ? "" : shelfNote(r)}
+          ${perStickNote(r)}
           ${sort === "value" && !unpriced && gOf(r.it) ? `<span class="per">$${per20(r.price, gOf(r.it)).toFixed(2)} per 20g</span>` : ""}
           ${r.mins != null ? `<span class="walk">${walkLabel(r.mins)}</span>` : ""}
         </span>
@@ -528,6 +543,7 @@
         <span class="price-col">
           <span class="price">${unpriced ? "—" : e.tax ? "$" + e.price.toFixed(2) : money(e.price)}</span>
           ${unpriced ? "" : shelfNote(e)}
+          ${perStickNote(e)}
           ${mins != null ? `<span class="walk">${walkLabel(mins)}</span>` : ""}
         </span>
       </article>`;
