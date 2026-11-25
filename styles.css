@@ -765,3 +765,46 @@ button:focus-visible, .chip:focus-visible, .tab:focus-visible {
 }
 .star:hover { border-color: var(--orange); }
 .star.on { background: #FCEBDC; border-color: #F3C9A3; color: #A4521A; }
+
+/* ── Add to Home Screen banner (above the tab bar) ───────────── */
+.install-banner {
+  position: fixed;
+  left: 12px; right: 12px;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 8px); /* JS fine-tunes this */
+  z-index: 11;
+  max-width: calc(var(--max) - 24px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px 10px 14px;
+  background: #13241D;
+  color: #F7F4EC;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(19, 36, 29, 0.25);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.install-text { margin: 0; flex: 1; }
+.install-go {
+  flex: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #EE8A3C;
+  color: #13241D;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.install-close {
+  flex: none;
+  width: 32px; height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #F7F4EC;
+  font-size: 16px;
+  cursor: pointer;
+}
+.install-close:hover, .install-close:focus-visible { color: #EE8A3C; }
