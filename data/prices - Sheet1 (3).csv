@@ -24,6 +24,7 @@ Dole Apple Juice 15oz,Juice,Bryan Center lobby shop,2.29,,,,Juice
 Muscle Milk ,Protein drink,Bryan Center lobby shop,4.69,,vanilla creme; chocolate,14 oz,Protein drink
 Starbucks Frappuccino,Coffee drink,Bryan Center lobby shop,4.29,,Vanilla; Caramel; Mocha,13.7 oz,Coffee drink
 Starbucks Doubleshot Energy cans,Coffee drink,Bryan Center lobby shop,4.29,,,,Coffee drink
+Spylt cans,Protein drink,Bryan Center veding maching,4,,,,Protein drink
 Spylt cans,Protein drink,Bryan Center lobby shop,4.69,,,,Protein drink
 Rockstar cans,Energy drink,Bryan Center lobby shop,3.59,,Original (gold); Sugar Free (white/gold); Punched (red),16 oz,Energy drink
 MTN DEW AMP,Energy drink,Bryan Center lobby shop,3.59,,,,
@@ -283,33 +284,18 @@ Flipz – Berry Donut,Snacks,Lobby Shop,5.99,,,,
 Biena Chickpea Snacks – Honey Roasted,Snacks,Lobby Shop,6.99,,,,
 Brownie Brittle – Dunkin',Snacks,Lobby Shop,3.29,,,,
 Ritz,Snacks,Lobby Shop,4.99,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-,,,,,,,
-Item,Category,Location,Price ($),,,,
-Chobani Yogurt Drinks,Refrigerated,Lobby Shop,,,,,
-Orange Juice,Refrigerated,Lobby Shop,,,,,
-20g Protein Shakes,Refrigerated,Lobby Shop,,,,,
-Muscle Milk Protein Shakes,Refrigerated,Lobby Shop,,,,,
-Oikos Yogurt Cups,Refrigerated,Lobby Shop,,,,,
-Chobani Yogurt Cups,Refrigerated,Lobby Shop,,,,,
-Land O Lakes Butter,Refrigerated,Lobby Shop,,,,,
-Sargento Colby Jack Cheese,Refrigerated,Lobby Shop,,,,,
-Sargento String Cheese,Refrigerated,Lobby Shop,,,,,
-Sargento Mild Cheddar Cheese,Refrigerated,Lobby Shop,,,,,
-Sargento Sharp Cheddar Cheese,Refrigerated,Lobby Shop,,,,,
-Sargento Pepper Jack Cheese,Refrigerated,Lobby Shop,,,,,
-Philadelphia Cream Cheese,Refrigerated,Lobby Shop,,,,,
-Babybel Cheese,Refrigerated,Lobby Shop,,,,,
-OH SNAP! Pickle Bites,Refrigerated,Lobby Shop,,,,,
-OH SNAP! Sliced Cucumbers,Refrigerated,Lobby Shop,,,,,
-OH SNAP! Carrot Sticks,Refrigerated,Lobby Shop,,,,,
-Cookie Dough,Refrigerated,Lobby Shop,,,,,
-Silk Almond Milk,Refrigerated,Lobby Shop,,,,,
-Eggs,Refrigerated,Lobby Shop,,,,,
-Barebells protein bar,Snack,Wilson café,5.13,,,,High protein
+Baked Lays,Chips,Wilson café,1.19,2026-11-24,,,Chips
+Barebells protein bar,Snack,Wilson café,5.29,2026-11-24,,,High protein
+Blue Diamond Almonds,Nuts,Wilson café,2.39,2026-11-24,,,Nuts
+Pure Protein Bar,Snack bar,Wilson café,2.39,2026-11-24,,,Protein bar
+RXBAR,Snack bar,Wilson café,4.29,2026-11-24,,,Protein bar
+Gimme Seaweed Snack,Snack,Wilson café,2.09,2026-11-24,,,Snack
+Veggie Straws,Chips,Wilson café,1.19,2026-11-24,,,Chips
+Gummy Bears,Candy,Wilson café,4.49,2026-11-24,,,Candy
+Tru Bar,Snack bar,Wilson café,3.89,2026-11-24,,,Protein bar
+Muffin,Bakery,Wilson café,3.39,2026-11-24,,,Breakfast
+Nutella & Go,Snack,Wilson café,2.99,2026-11-24,,,Snack
+Quest bar,Snack bar,Wilson café,3.89,2026-11-24,,,Protein bar
+Fruit Jerky,Fruit snacks,Wilson café,2.99,2026-11-24,,,Fruit snacks
+Chomps,Meat snack,Wilson café,4.99,2026-11-24,,,Snack
+That's It Bar,Snack bar,Wilson café,2.49,2026-11-24,,,Fruit bar

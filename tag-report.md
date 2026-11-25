@@ -16,7 +16,7 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Aquafina (metal bottle) | Aquafina | aquafina, water, bottled water, drink, low calorie, low cal, zero sugar, diet, light |
 | Aquafina (plastic bottle) | Aquafina | aquafina, water, bottled water, drink, low calorie, low cal, zero sugar, diet, light |
 | AWAKE caffeinated chocolate | AWAKE | awake, energy, chocolate, candy bar, candy, sweets, caffeine |
-| Babybel cheese | Babybel | babybel, cheese, dairy, healthy |
+| Baked Lay’s | Lay’s | lay’s, potato chips, chips, snack, salty |
 | Banana | — | fruit, fresh fruit, healthy |
 | Barebells protein bar | Barebells | barebells, protein bar, snack bar, chocolate, protein |
 | BarkTHINS snacking chocolate | BarkTHINS | barkthins, chocolate, dark chocolate, almonds, candy, sweets |
@@ -42,9 +42,9 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Chobani Greek Yogurt Drink | Chobani | chobani, yogurt, yogurt drink, protein drink, dairy, drink, protein, healthy |
 | Chobani yogurt cup | Chobani | chobani, yogurt, greek yogurt, dairy, protein, healthy |
 | Chocolove chocolate | Chocolove | chocolove, chocolate, chocolate bar, candy, sweets |
+| Chomps meat stick | — | protein |
 | Clif Bar | Clif | clif, snack bar, granola bar, protein |
 | Coca-Cola / Diet Coke | Coca-Cola | coca-cola, soda, pop, cola, drink, caffeine, low calorie, low cal, zero sugar, diet, light (low cal: diet/zero versions only) |
-| Cookie dough | — | cookie dough, baking, groceries |
 | Crunch bar | Crunch | crunch, crisped rice, chocolate, candy bar, candy, sweets |
 | Crunch bar King Size | Crunch | crunch, crisped rice, chocolate, candy bar, candy, sweets |
 | Dasani water | Dasani | dasani, water, bottled water, drink, low calorie, low cal, zero sugar, diet, light |
@@ -53,17 +53,19 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Doritos | Doritos | doritos, tortilla chips, chips, snack, salty |
 | Doublemint gum | Wrigley’s | wrigley’s, gum, chewing gum, low calorie, low cal, zero sugar, diet, light |
 | Dr Pepper | Dr Pepper | dr pepper, soda, pop, cola, drink, caffeine, low calorie, low cal, zero sugar, diet, light (low cal: diet/zero versions only) |
-| Eggs | — | eggs, groceries |
 | Fanta | Fanta | fanta, soda, pop, drink |
 | FitZels protein pretzels | FitZels | fitzels, pretzels, snack, protein |
 | Flipz chocolate-covered pretzels | Flipz | flipz, pretzels, snack, chocolate covered pretzels, chocolate, candy, sweets |
 | Fritos Flavor Twists | Fritos | fritos, corn chips, chips, snack, salty |
+| Fruit jerky | — |  |
 | Garden Veggie Straws | Sensible Portions | sensible portions, veggie straws, chips, snack, salty |
 | Gatorade | Gatorade | gatorade, sports drink, electrolytes, drink |
 | Ghirardelli chocolate squares | Ghirardelli | ghirardelli, chocolate, chocolate bar, candy, sweets |
+| Gimme seaweed snack | — | healthy |
 | Gold Peak tea | Gold Peak | gold peak, iced tea, tea, drink |
 | Golden Oreo Minis | Oreo | oreo, cookies, vanilla, sweets |
 | Goldfish | Goldfish | goldfish, pepperidge farm, cheese, crackers, snack |
+| Gummy bears (brand not recorded) | — | gummies, candy, sweets |
 | Gushers | Gushers | gushers, fruit snacks, candy, sweets |
 | Haribo Goldbears | Haribo | haribo, gummies, candy, sweets, gummy bears |
 | Haribo gummies, peg bag | Haribo | haribo, gummies, candy, sweets, gummy bears |
@@ -82,7 +84,6 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Lance Captain’s Wafers | Lance | lance, crackers, sandwich crackers, snack, cheese |
 | Lance Nekot cookies | Lance | lance, cookies, peanut butter, sandwich cookies, sweets |
 | Lance Toast Chee crackers | Lance | lance, crackers, sandwich crackers, snack, peanut butter |
-| Land O Lakes butter | Land O Lakes | land o lakes, butter, dairy, groceries |
 | Lay’s potato chips | Lay’s | lay’s, potato chips, chips, snack, salty |
 | LesserEvil popcorn | LesserEvil | lesserevil, popcorn, snack |
 | Life Savers hard candy | Life Savers | life savers, hard candy, candy, sweets |
@@ -102,6 +103,7 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Mr. Goodbar King Size | Hershey’s | hershey’s, peanuts, chocolate, candy bar, candy, sweets |
 | Mtn Dew AMP | Mtn Dew | mtn dew, mountain dew, drink, energy drink, energy, caffeine |
 | Mtn Dew Kickstart | Mtn Dew | mtn dew, mountain dew, drink, energy drink, energy, caffeine |
+| Muffin | — |  |
 | Muscle Milk | Muscle Milk | muscle milk, protein shake, protein drink, milk, dairy, drink, protein, chocolate |
 | Naked Juice | Naked | naked, juice, smoothie, drink |
 | Nature Valley Almond Butter Biscuits | Nature Valley | nature valley, biscuits, almond butter |
@@ -109,8 +111,8 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Nature Valley Fruit & Nut bar | Nature Valley | nature valley, snack bar, granola bar, nuts |
 | Nerds gummy clusters | Nerds | nerds, gummies, candy, sweets |
 | Now & Later | Now & Later | now & later, chewy candy, candy, sweets |
+| Nutella & Go | — |  |
 | Ocean Spray juice | Ocean Spray | ocean spray, juice, drink |
-| OH SNAP! pickles & veggies | OH SNAP! | oh snap!, pickles, veggies, vegetables, snack, healthy |
 | Oikos yogurt | Oikos | oikos, yogurt, greek yogurt, dairy, protein, healthy |
 | OLIPOP | OLIPOP | olipop, soda, prebiotic soda, drink |
 | Open Water | Open Water | open water, water, bottled water, drink, low calorie, low cal, zero sugar, diet, light |
@@ -120,14 +122,13 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Oreo | Oreo | oreo, cookies, chocolate, sweets |
 | Peg-bag candy (assorted) | — | candy, sweets |
 | Pepsi | Pepsi | pepsi, soda, pop, cola, drink, caffeine, low calorie, low cal, zero sugar, diet, light (low cal: diet/zero versions only) |
-| Philadelphia cream cheese | Philadelphia | philadelphia, cream cheese, dairy, groceries |
 | Popchips | Popchips | popchips, potato chips, chips, snack, salty |
 | Poppi | Poppi | poppi, soda, prebiotic soda, drink |
 | Powerade | Powerade | powerade, sports drink, electrolytes, drink |
 | Powerade Zero | Powerade | powerade, sports drink, electrolytes, drink, low calorie, low cal, zero sugar, diet, light |
 | PowerBar | PowerBar | powerbar, protein bar, snack bar, protein |
 | Propel | Propel | propel, water, flavored water, electrolytes, drink, low calorie, low cal, zero sugar, diet, light |
-| Protein shake, 20g (brand not recorded) | — | protein shake, protein drink, drink, protein |
+| Pure Protein bar | — | protein |
 | Quest frosted cookie | Quest | quest, cookies, protein cookie, sweets, protein |
 | Quest peanut butter cups | Quest | quest, peanut butter cups, peanut butter, chocolate, candy, sweets, protein |
 | Quest protein bar | Quest | quest, protein bar, snack bar, protein |
@@ -146,9 +147,8 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Roasted pistachios | — | nuts, pistachios, snack, healthy |
 | Rockstar Energy | Rockstar | rockstar, drink, energy drink, energy, caffeine |
 | Ruffles | Ruffles | ruffles, potato chips, chips, snack, salty |
-| Sargento cheese | Sargento | sargento, cheese, dairy |
+| RXBAR | — | protein |
 | Schweppes Ginger Ale | Schweppes | schweppes, soda, pop, drink |
-| Silk almond milk | Silk | silk, almond milk, milk, dairy-free, drink |
 | SkinnyPop popcorn | SkinnyPop | skinnypop, popcorn, snack |
 | Skittles | Skittles | skittles, chewy candy, candy, sweets, fruity |
 | Skittles Gummies | Skittles | skittles, gummies, candy, sweets, fruity |
@@ -182,6 +182,7 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | SweeTarts Mini Chewy | SweeTarts | sweetarts, sour candy, chewy candy, candy, sweets |
 | Takis | Takis | takis, tortilla chips, chips, snack, salty, spicy |
 | Tastelli konjac jelly drink | Tastelli | tastelli, jelly drink, konjac, drink |
+| That’s It fruit bar | — | healthy |
 | think! protein bar | think! | think!, protein bar, snack bar, protein |
 | Toblerone | Toblerone | toblerone, nougat, almonds, honey, chocolate, candy bar, candy, sweets |
 | Topo Chico | Topo Chico | topo chico, water, sparkling water, mineral water, seltzer, drink, low calorie, low cal, zero sugar, diet, light |
@@ -191,6 +192,7 @@ Word groups (searching one finds the others): candy = sweet · energy = caffeine
 | Trident White gum, 16 pieces | Trident | trident, gum, chewing gum, low calorie, low cal, zero sugar, diet, light |
 | Trolli gummies, peg bag | Trolli | trolli, gummies, candy, sweets, gummy worms, sour candy |
 | Trolli sour gummies | Trolli | trolli, gummies, candy, sweets, gummy worms, sour candy |
+| Tru Bar | — | protein |
 | Twix King Size | Twix | twix, caramel, cookie, chocolate, candy bar, candy, sweets |
 | Vitaminwater | Vitaminwater | vitaminwater, water, flavored water, vitamins, drink, low calorie, low cal, zero sugar, diet, light (low cal: diet/zero versions only) |
 | Warheads, peg bag | Warheads | warheads, gummies, candy, sweets, sour candy |

@@ -724,25 +724,6 @@ window.PACE_TAGS = {
     "drink"
    ]
   },
-  "Protein shake, 20g (brand not recorded)": {
-   "brand": null,
-   "tags": [
-    "protein shake",
-    "protein drink",
-    "drink",
-    "protein"
-   ]
-  },
-  "Silk almond milk": {
-   "brand": "Silk",
-   "tags": [
-    "silk",
-    "almond milk",
-    "milk",
-    "dairy-free",
-    "drink"
-   ]
-  },
   "Barebells protein bar": {
    "brand": "Barebells",
    "tags": [
@@ -2061,23 +2042,69 @@ window.PACE_TAGS = {
     "snack"
    ]
   },
-  "Babybel cheese": {
-   "brand": "Babybel",
+  "Baked Lay’s": {
+   "brand": "Lay’s",
    "tags": [
-    "babybel",
-    "cheese",
-    "dairy",
+    "lay’s",
+    "potato chips",
+    "chips",
+    "snack",
+    "salty"
+   ]
+  },
+  "Pure Protein bar": {
+   "brand": null,
+   "tags": [
+    "protein"
+   ]
+  },
+  "RXBAR": {
+   "brand": null,
+   "tags": [
+    "protein"
+   ]
+  },
+  "Gimme seaweed snack": {
+   "brand": null,
+   "tags": [
     "healthy"
    ]
   },
-  "OH SNAP! pickles & veggies": {
-   "brand": "OH SNAP!",
+  "Gummy bears (brand not recorded)": {
+   "brand": null,
    "tags": [
-    "oh snap!",
-    "pickles",
-    "veggies",
-    "vegetables",
-    "snack",
+    "gummies",
+    "candy",
+    "sweets"
+   ]
+  },
+  "Tru Bar": {
+   "brand": null,
+   "tags": [
+    "protein"
+   ]
+  },
+  "Muffin": {
+   "brand": null,
+   "tags": []
+  },
+  "Nutella & Go": {
+   "brand": null,
+   "tags": []
+  },
+  "Fruit jerky": {
+   "brand": null,
+   "tags": []
+  },
+  "Chomps meat stick": {
+   "brand": null,
+   "tags": [
+    "protein"
+   ]
+  },
+  "That’s It fruit bar": {
+   "brand": null,
+   "tags": [
     "healthy"
    ]
   },
@@ -2089,47 +2116,6 @@ window.PACE_TAGS = {
     "meal",
     "grain bowl",
     "healthy"
-   ]
-  },
-  "Land O Lakes butter": {
-   "brand": "Land O Lakes",
-   "tags": [
-    "land o lakes",
-    "butter",
-    "dairy",
-    "groceries"
-   ]
-  },
-  "Sargento cheese": {
-   "brand": "Sargento",
-   "tags": [
-    "sargento",
-    "cheese",
-    "dairy"
-   ]
-  },
-  "Philadelphia cream cheese": {
-   "brand": "Philadelphia",
-   "tags": [
-    "philadelphia",
-    "cream cheese",
-    "dairy",
-    "groceries"
-   ]
-  },
-  "Cookie dough": {
-   "brand": null,
-   "tags": [
-    "cookie dough",
-    "baking",
-    "groceries"
-   ]
-  },
-  "Eggs": {
-   "brand": null,
-   "tags": [
-    "eggs",
-    "groceries"
    ]
   }
  }

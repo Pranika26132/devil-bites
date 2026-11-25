@@ -35,6 +35,8 @@ const LOCATIONS = {
   "bryan center lobby shop": "lobby",
   "bc lobby shop": "lobby",
   "bc vending": "bcVending",
+  "bryan center vending machine": "bcVending",
+  "bryan center veding maching": "bcVending",
   "wu vending machine": "wuVending",
   "wu vending": "wuVending",
   "trinity vending machine": "trinityVending",
@@ -132,6 +134,18 @@ const NAMES = {
   "quest protein cookie": "Quest protein cookie",
   "quest frosted cookie": "Quest frosted cookie",
   "quest peanut butter cups": "Quest peanut butter cups",
+  "pure protein bar": "Pure Protein bar",
+  "rxbar": "RXBAR",
+  "tru bar": "Tru Bar",
+  "chomps": "Chomps meat stick",
+  "that's it bar": "That’s It fruit bar",
+  "baked lays": "Baked Lay’s",
+  "veggie straws": "Garden Veggie Straws",
+  "gimme seaweed snack": "Gimme seaweed snack",
+  "gummy bears": "Gummy bears (brand not recorded)",
+  "muffin": "Muffin",
+  "nutella & go": "Nutella & Go",
+  "fruit jerky": "Fruit jerky",
   "think protein": "think! protein bar",
   "clif energy bar": "Clif Bar",
   "clif bar": "Clif Bar",
@@ -420,6 +434,18 @@ const NEW_ITEMS = {
   "Cookie dough":                    { category: "Groceries" },
   "Silk almond milk":                { category: "Drinks", aka: ["almond milk"] },
   "Eggs":                            { category: "Groceries" },
+  // Wilson café, 2026-11-24 (protein grams not filled in yet)
+  "Pure Protein bar":                { category: "Snacks", highProtein: true, aka: ["protein bar"] },
+  "RXBAR":                           { category: "Snacks", highProtein: true, aka: ["rx bar", "protein bar"] },
+  "Tru Bar":                         { category: "Snacks", highProtein: true, aka: ["truvani", "protein bar"] },
+  "Chomps meat stick":               { category: "Snacks", highProtein: true, aka: ["chomps", "jerky", "meat stick"] },
+  "That’s It fruit bar":             { category: "Snacks", healthy: true, aka: ["thats it", "fruit bar"] },
+  "Baked Lay’s":                     { category: "Snacks", aka: ["baked lays", "lays", "chips"] },
+  "Gimme seaweed snack":             { category: "Snacks", healthy: true, aka: ["gimme", "seaweed"] },
+  "Gummy bears (brand not recorded)": { category: "Snacks", aka: ["gummies"] },
+  "Muffin":                          { category: "Snacks", aka: ["breakfast", "bakery"] },
+  "Nutella & Go":                    { category: "Snacks", aka: ["nutella"] },
+  "Fruit jerky":                     { category: "Snacks", aka: ["fruit snacks"] },
 };
 
 // Item info set here wins over what's in data/prices.js (merged in, other fields kept).
@@ -431,12 +457,17 @@ const ITEM_INFO = {
   "PowerBar":           { protein: { g: 13 } },
 };
 
-// Sales tax by location id. Written into the locations block of data/prices.js
-// (the app adds it to shelf prices from the sheet).
+// ── SALES TAX: the one place to change tax rates ──
+// Rate by location id (0.0745 = 7.45%). Written into the locations block of
+// data/prices.js; the app adds it to the sheet's shelf prices everywhere it
+// shows or compares a price.
 const LOCATION_TAX = {
-  lobby: 0.02,
-  bellaUnion: 0.02,
-  wilsonCafe: 0.02,
+  lobby: 0.02,           // Bryan Center Lobby Shop
+  bellaUnion: 0.02,      // Bella Union
+  wilsonCafe: 0.0745,    // Wilson café
+  bcVending: 0,          // vending machines: no tax
+  wuVending: 0,
+  trinityVending: 0,
 };
 
 // ── helpers ──

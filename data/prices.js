@@ -1,7 +1,7 @@
 /*
   Devil Bites price data — student price checks, Oct–Nov 2026.
 
-  BUILT FROM THE PRICE SHEET: edit "data/prices - Sheet1 (1).csv", then run
+  BUILT FROM THE PRICE SHEET: edit "data/prices - Sheet1 (3).csv", then run
       node tools/build-prices.mjs
   Prices, places, sizes, flavors and dates come from the sheet.
   Item details (category, other spellings, caffeine, protein) are kept from this
@@ -18,7 +18,7 @@ window.PACE_DATA = {
     wuCafe:         { name: "West Union café", tax: 0, lat: 36.00108780707493, lng: -78.93924924627412 },  // tax: confirm
     bellaUnion:     { name: "Bella Union", tax: 0.02, lat: 35.999447140847785, lng: -78.93699803753199 },
     trinityCafe:    { name: "Trinity Café", tax: 0, lat: 36.0077398746094, lng: -78.91386068250522 },  // tax: confirm
-    wilsonCafe:     { name: "Wilson Café", tax: 0.02 },                         // coordinates needed
+    wilsonCafe:     { name: "Wilson Café", tax: 0.0745 },                         // coordinates needed
     tandoor:        { name: "Tandoor", tax: 0 },                             // coordinates needed; tax not checked
     farmstead:      { name: "Farmstead", tax: 0, area: "West Union", lat: 36.00108780707493, lng: -78.93924924627412 },  // tax not checked
     skillet:        { name: "Skillet", tax: 0, area: "West Union", lat: 36.00108780707493, lng: -78.93924924627412 },  // tax not checked
@@ -90,8 +90,6 @@ window.PACE_DATA = {
     "Slate Milk": { category: "Drinks", highProtein: true, aka: ["slate"], protein: { g: 20 } },
     "Chobani Greek Yogurt Drink": { category: "Drinks", highProtein: true, healthy: true, aka: ["chobani shake"], protein: { g: 20 } },
     "Tastelli konjac jelly drink": { category: "Drinks", aka: ["konjac"] },
-    "Protein shake, 20g (brand not recorded)": { category: "Drinks", highProtein: true },
-    "Silk almond milk": { category: "Drinks", aka: ["almond milk"] },
 
     // Snacks
     "Barebells protein bar": { category: "Snacks", highProtein: true, aka: ["barbell bar","bare bells"], protein: { g: 20 } },
@@ -221,18 +219,20 @@ window.PACE_DATA = {
     "Biena chickpea snacks": { category: "Snacks", aka: ["biena","roasted chickpeas"] },
     "Brownie Brittle, Lobby Shop bag": { category: "Snacks" },
     "Ritz crackers": { category: "Snacks", aka: ["ritz"] },
-    "Babybel cheese": { category: "Snacks", healthy: true },
-    "OH SNAP! pickles & veggies": { category: "Snacks", healthy: true, aka: ["oh snap","pickles"] },
+    "Baked Lay’s": { category: "Snacks", aka: ["baked lays","lays","chips"] },
+    "Pure Protein bar": { category: "Snacks", highProtein: true, aka: ["protein bar"] },
+    "RXBAR": { category: "Snacks", highProtein: true, aka: ["rx bar","protein bar"] },
+    "Gimme seaweed snack": { category: "Snacks", healthy: true, aka: ["gimme","seaweed"] },
+    "Gummy bears (brand not recorded)": { category: "Snacks", aka: ["gummies"] },
+    "Tru Bar": { category: "Snacks", highProtein: true, aka: ["truvani","protein bar"] },
+    "Muffin": { category: "Snacks", aka: ["breakfast","bakery"] },
+    "Nutella & Go": { category: "Snacks", aka: ["nutella"] },
+    "Fruit jerky": { category: "Snacks", aka: ["fruit snacks"] },
+    "Chomps meat stick": { category: "Snacks", highProtein: true, aka: ["chomps","jerky","meat stick"] },
+    "That’s It fruit bar": { category: "Snacks", healthy: true, aka: ["thats it","fruit bar"] },
 
     // Meals
     "Kitchen & Love Quinoa Quick Cup": { category: "Meals", healthy: true, aka: ["quinoa"] },
-
-    // Groceries
-    "Land O Lakes butter": { category: "Groceries", aka: ["butter"] },
-    "Sargento cheese": { category: "Groceries", aka: ["cheese"] },
-    "Philadelphia cream cheese": { category: "Groceries", aka: ["cream cheese"] },
-    "Cookie dough": { category: "Groceries" },
-    "Eggs": { category: "Groceries" },
   },
 
   prices: [
@@ -320,20 +320,19 @@ window.PACE_DATA = {
     { item: "Monster Energy", loc: "bcVending", price: 3.75, flavors: ["Ultra"], checked: "2026-11-03" },
     { item: "Mtn Dew AMP", loc: "lobby", price: 3.59 },
     { item: "Muscle Milk", loc: "lobby", price: 4.69, size: "14 oz", flavors: ["Chocolate","Vanilla creme"] },
+    { item: "Spylt protein milk", loc: "bcVending", price: 4 },
     { item: "Spylt protein milk", loc: "lobby", price: 4.69 },
     { item: "Slate Milk", loc: "bcVending", price: 4, flavors: ["Chocolate","Cookies & Cream","Vanilla"], checked: "2026-11-03" },
     { item: "Chobani Greek Yogurt Drink", loc: "lobby", price: 4.09, flavors: ["Mixed Berry Vanilla","Strawberries & Cream"], checked: "2026-11-06" },
     { item: "Tastelli konjac jelly drink", loc: "lobby", price: 3.49, flavors: ["Mango","Passion Fruit","Peach","Strawberry"] },
-    { item: "Protein shake, 20g (brand not recorded)", loc: "lobby", price: null },
-    { item: "Silk almond milk", loc: "lobby", price: null },
 
     // ── Snacks ──
     { item: "Barebells protein bar", loc: "wuVending", price: 3.25 },
     { item: "Barebells protein bar", loc: "lobby", price: 3.99, checked: "2026-11-04" },
-    { item: "Barebells protein bar", loc: "wilsonCafe", price: 5.13 },
+    { item: "Barebells protein bar", loc: "wilsonCafe", price: 5.29, checked: "2026-11-24" },
     { item: "Oikos yogurt", loc: "bellaUnion", price: 1.89, checked: "2026-10-19" },
     { item: "Oikos yogurt", loc: "trinityCafe", price: 3.09, checked: "2026-10-19" },
-    { item: "Oikos yogurt", loc: "lobby", price: null },
+    { item: "Quest protein bar", loc: "wilsonCafe", price: 3.89, checked: "2026-11-24" },
     { item: "Quest protein bar", loc: "lobby", price: 4.19, checked: "2026-11-04" },
     { item: "Quest protein cookie", loc: "lobby", price: 3.89, checked: "2026-11-04" },
     { item: "Quest frosted cookie", loc: "lobby", price: 4.19, checked: "2026-11-04" },
@@ -342,7 +341,6 @@ window.PACE_DATA = {
     { item: "PowerBar", loc: "bcVending", price: 3.25, checked: "2026-11-03" },
     { item: "Beef jerky", loc: "bcVending", price: 3.25, checked: "2026-11-03", note: "Brand unclear." },
     { item: "Chobani yogurt cup", loc: "bellaUnion", price: 1.89, checked: "2026-11-07" },
-    { item: "Chobani yogurt cup", loc: "lobby", price: null },
     { item: "Cheese stick", loc: "lobby", price: 0.99, checked: "2026-11-07" },
     { item: "Clif Bar", loc: "lobby", price: 2.69, checked: "2026-11-04" },
     { item: "Clif Bar", loc: "wuVending", price: 3.25 },
@@ -365,6 +363,7 @@ window.PACE_DATA = {
     { item: "Cheez-It", loc: "wuVending", price: 2.5 },
     { item: "Cheez-It", loc: "bcVending", price: 2.5, checked: "2026-11-03" },
     { item: "Snyder’s mini pretzels", loc: "wuVending", price: 2 },
+    { item: "Garden Veggie Straws", loc: "wilsonCafe", price: 1.19, checked: "2026-11-24" },
     { item: "Garden Veggie Straws", loc: "wuVending", price: 2, flavors: ["Zesty Ranch"] },
     { item: "Bugles", loc: "wuVending", price: 2, flavors: ["Nacho Cheese"] },
     { item: "Goldfish", loc: "wuVending", price: 2, flavors: ["Cheddar"] },
@@ -382,6 +381,7 @@ window.PACE_DATA = {
     { item: "BOOMCHICKAPOP popcorn", loc: "bellaUnion", price: 6.99, size: "Big", flavors: ["Assorted varieties"], checked: "2026-11-07" },
     { item: "LesserEvil popcorn", loc: "bellaUnion", price: 6.29, size: "4.6 oz", flavors: ["Homer’s Blend Garlic Parmesan","Oh My Ghee"], checked: "2026-11-07" },
     { item: "SkinnyPop popcorn", loc: "bellaUnion", price: 6.99, size: "Big", flavors: ["Aged white cheddar","Original"], checked: "2026-11-07" },
+    { item: "Blue Diamond almonds", loc: "wilsonCafe", price: 2.39, checked: "2026-11-24" },
     { item: "Blue Diamond almonds", loc: "bellaUnion", price: 7.99, flavors: ["Honey Roasted","Lime","Smokehouse","Whole Natural"], checked: "2026-11-07" },
     { item: "Dirty potato chips", loc: "bellaUnion", price: 2.29, flavors: ["Mesquite BBQ","Salt & Vinegar","Sea Salt","Sour Cream & Onion","Sriracha Honey"], checked: "2026-11-07" },
     { item: "Lance Nekot cookies", loc: "bcVending", price: 1.25, checked: "2026-11-03" },
@@ -480,17 +480,19 @@ window.PACE_DATA = {
     { item: "Biena chickpea snacks", loc: "lobby", price: 6.99, flavors: ["Honey Roasted"] },
     { item: "Brownie Brittle, Lobby Shop bag", loc: "lobby", price: 3.29, flavors: ["Dunkin'"] },
     { item: "Ritz crackers", loc: "lobby", price: 4.99 },
-    { item: "Babybel cheese", loc: "lobby", price: null },
-    { item: "OH SNAP! pickles & veggies", loc: "lobby", price: null, flavors: ["Carrot Sticks","Pickle Bites","Sliced Cucumbers"] },
+    { item: "Baked Lay’s", loc: "wilsonCafe", price: 1.19, checked: "2026-11-24" },
+    { item: "Pure Protein bar", loc: "wilsonCafe", price: 2.39, checked: "2026-11-24" },
+    { item: "RXBAR", loc: "wilsonCafe", price: 4.29, checked: "2026-11-24" },
+    { item: "Gimme seaweed snack", loc: "wilsonCafe", price: 2.09, checked: "2026-11-24" },
+    { item: "Gummy bears (brand not recorded)", loc: "wilsonCafe", price: 4.49, checked: "2026-11-24" },
+    { item: "Tru Bar", loc: "wilsonCafe", price: 3.89, checked: "2026-11-24" },
+    { item: "Muffin", loc: "wilsonCafe", price: 3.39, checked: "2026-11-24" },
+    { item: "Nutella & Go", loc: "wilsonCafe", price: 2.99, checked: "2026-11-24" },
+    { item: "Fruit jerky", loc: "wilsonCafe", price: 2.99, checked: "2026-11-24" },
+    { item: "Chomps meat stick", loc: "wilsonCafe", price: 4.99, checked: "2026-11-24" },
+    { item: "That’s It fruit bar", loc: "wilsonCafe", price: 2.49, checked: "2026-11-24" },
 
     // ── Meals ──
     { item: "Kitchen & Love Quinoa Quick Cup", loc: "bellaUnion", price: 5.39, size: "7.9 oz", flavors: ["Artichoke & roasted pepper","Basil Pesto"], checked: "2026-11-07" },
-
-    // ── Groceries ──
-    { item: "Land O Lakes butter", loc: "lobby", price: null },
-    { item: "Sargento cheese", loc: "lobby", price: null, flavors: ["Colby Jack","Mild Cheddar","Pepper Jack","Sharp Cheddar"] },
-    { item: "Philadelphia cream cheese", loc: "lobby", price: null },
-    { item: "Cookie dough", loc: "lobby", price: null },
-    { item: "Eggs", loc: "lobby", price: null },
   ],
 };
