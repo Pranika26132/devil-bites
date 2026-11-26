@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F7F4EC">
+  <title>Our story · Devil Bites</title>
+  <meta name="description" content="Why your protein bar costs $2 more across campus, and how Devil Bites helps Duke students find the cheapest snacks and pace their food points.">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #13241D;     /* dark green */
+      --cream: #F7F4EC;   /* background */
+      --orange: #EE8A3C;  /* accent */
+      --muted: #4B5A52;
+      --line: #E6E1D4;
+      --head: "Fredoka", system-ui, sans-serif;
+      --body: "Nunito Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 18px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    }
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: max(28px, env(safe-area-inset-top)) 20px max(40px, env(safe-area-inset-bottom));
+    }
+    .eyebrow {
+      margin: 0 0 20px;
+      font-family: var(--head);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #2F7D55;
+    }
+    .eyebrow a { color: inherit; text-decoration: none; }
+
+    .try {
+      display: block;
+      margin: 8px 0 36px;
+      padding: 16px 24px;
+      border-radius: 999px;
+      background: var(--orange);
+      color: var(--ink);
+      font-family: var(--head);
+      font-weight: 700;
+      font-size: 20px;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(238, 138, 60, 0.3);
+    }
+    .try:hover, .try:focus-visible { background: #F29A53; }
+    .try:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+    h1, h2, h3 { font-family: var(--head); line-height: 1.2; color: var(--ink); }
+    h1 { font-size: 34px; font-weight: 700; margin: 0 0 10px; letter-spacing: -0.01em; }
+    h2 { font-size: 25px; font-weight: 600; margin: 44px 0 12px; }
+    h3 { font-size: 20px; font-weight: 600; margin: 30px 0 8px; }
+    .date { margin: 0 0 28px; color: var(--muted); font-size: 16px; }
+    p { margin: 0 0 18px; }
+    ul { margin: 0 0 18px; padding-left: 1.3em; }
+    li { margin-bottom: 8px; }
+    li::marker { color: var(--orange); }
+    a { color: #2F7D55; font-weight: 700; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+    .lede { font-size: 20px; }
+    .try-bottom { margin: 32px 0 24px; }
+    .note { color: var(--muted); font-size: 15px; border-top: 1.5px solid var(--line); padding-top: 18px; }
+
+    @media (min-width: 760px) {
+      .page { padding-top: 48px; }
+      h1 { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="eyebrow"><a href="./">Devil Bites</a> · Our story</p>
+
+    <a class="try" href="./">Try Devil Bites</a>
+
+    <article>
+      <h1>Devil Bites: Why Your Protein Bar Costs $2 More Across Campus</h1>
+      <p class="date"><time datetime="2026-11-15">November 15, 2026</time></p>
+
+      <p class="lede">Devil Bites is a free web app that helps Duke students find the cheapest snacks and drinks on campus and manage their food points throughout the semester.</p>
+
+      <h2>Where the idea came from</h2>
+      <p>One day, I bought a Barebells protein bar at the Wilson café for $5.68. Later that week, I found the exact same protein bar in a vending machine for $3.25. I was surprised that there could be such a big price difference for the same product on the same campus.</p>
+      <p>I started wondering how many other snacks I was overpaying for without realizing it. If I bought three of those protein bars a week at Wilson instead of a vending machine, I would be spending over $100 more each semester just on protein bars.</p>
+      <p>There wasn’t really an easy way to compare prices across campus, so I decided to build one.</p>
+
+      <h2>Looking at prices across Duke</h2>
+      <p>I walked around campus and manually collected over 300 prices from vending machines, the Lobby Shop, Bella Union, the Wilson café, and several other locations.</p>
+      <p>I found a few interesting things:</p>
+      <ul>
+        <li>27 items had price differences of up to 75% depending on where they were purchased.</li>
+        <li>No single location was consistently the cheapest. Vending machines had cheaper Barebells, while the Lobby Shop had cheaper Bubbl’r and Gatorade.</li>
+        <li>Taxes also varied by location. Vending machines had no additional tax, the Lobby Shop and Bella Union added 2%, and the Wilson café added 7.45%.</li>
+      </ul>
+      <p>Even if students wanted to save food points, it would be difficult to remember which location had the best price for every product, especially when factoring in taxes.</p>
+
+      <h2>What Devil Bites does</h2>
+      <h3>Comparing prices across campus</h3>
+      <p>Students can search for a snack or drink and see which locations sell it, how much it costs after tax, and where they can get it for the lowest price.</p>
+      <p>I also wanted the app to be useful when students don’t have a specific product in mind. For example, if you’re looking for an energy drink before an exam or trying to get more protein without spending too many food points, you can use the nutritional filters to compare your options.</p>
+      <p>Some additional features include:</p>
+      <ul>
+        <li>Sorting products by price or walking distance.</li>
+        <li>Finding products with the biggest price differences across campus.</li>
+        <li>Comparing caffeine content and protein per dollar.</li>
+        <li>Filtering for lower-calorie snacks and drinks.</li>
+        <li>Saving frequently purchased items for easy access.</li>
+      </ul>
+
+      <h3>Managing food points</h3>
+      <p>Another problem I noticed was how difficult it can be to figure out whether you’re spending your food points too quickly. It’s especially hard to account for breaks, weekends, and days when you’re not eating on campus.</p>
+      <p>I built a feature called My Pace, where students can select their meal plan and enter their current food point balance. The app calculates how much they should have left at that point in the semester, whether they’re ahead or behind, and how much they can spend each day moving forward.</p>
+      <p>Students can also mark days when they’ll be away from campus, such as Thanksgiving break, and their budget will adjust accordingly. The calculations account for differences between meal plans, including plans that only charge on weekdays.</p>
+
+      <h2>Why I wanted to combine these features</h2>
+      <p>There are already tools that help Duke students track their food points or locate vending machines, but I wanted to connect those two ideas.</p>
+      <p>Knowing that you’re behind on food points is helpful, but knowing where you can buy the things you already purchase for less makes it easier to actually change your spending habits. My goal was to give students both pieces of information in one place without requiring them to drastically change what they eat or drink.</p>
+
+      <h2>How I built it</h2>
+      <p>I built Devil Bites using HTML, CSS, and JavaScript and hosted it on GitHub Pages. All of the pricing data is stored in a spreadsheet, which makes it easier to update prices without having to change the code every time.</p>
+      <p>I wanted to make the app as accessible as possible, so there is no sign-up process or account required. The app doesn’t collect personal information or food point balances, and students can add it directly to their phone’s home screen.</p>
+
+      <h2>What I learned</h2>
+      <p>Going into this project, I expected the coding to be the most time-consuming part. However, collecting and organizing the data ended up being one of the biggest challenges. Prices varied by location, products were listed under different names, and taxes made comparisons more complicated than I initially expected.</p>
+      <p>I also spent a lot of time thinking about how to present the information in a way that students would actually find useful. Having a spreadsheet with over 300 prices is great, but most students aren’t going to look through it every time they want a snack. I wanted to make that information accessible within a few seconds.</p>
+      <p>One of my favorite parts of building Devil Bites was taking a small frustration from my own experience at Duke and turning it into something that could hopefully help other students.</p>
+
+      <h2>Try Devil Bites</h2>
+      <p>Devil Bites is free and available at <a href="https://devil-bites.vercel.app/">https://devil-bites.vercel.app/</a>.</p>
+    </article>
+
+    <a class="try try-bottom" href="./">Try Devil Bites</a>
+
+    <p class="note"><em>Devil Bites is an independent student project and is not affiliated with Duke Dining.</em></p>
+  </main>
+</body>
+</html>
