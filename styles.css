@@ -704,6 +704,7 @@ button:focus-visible, .chip:focus-visible, .tab:focus-visible {
 .save-line { margin: 4px 0 2px; color: var(--green); font-size: 14px; font-weight: 700; line-height: 1.35; }
 .credit-main { margin: 0 0 6px; font-size: 14px; color: var(--ink); }
 .credit-main a { color: var(--green); font-weight: 700; }
+.credit-privacy { margin: 0 0 6px; }
 
 /* ── Low calorie: All / Drinks / Snacks toggle and diet/zero label ── */
 .scope-row {

@@ -56,6 +56,8 @@
   let timeReached = false;
   let deferredPrompt = null; // Android: saved beforeinstallprompt event
 
+  const track = (name) => { if (window.DevilBitesTrack) window.DevilBitesTrack(name); };
+
   function hide() { banner.hidden = true; }
 
   function maybeShow() {
@@ -64,6 +66,7 @@
     // Keep it just above the tab bar, whatever its real height.
     const bar = document.querySelector(".tabbar");
     if (bar) banner.style.bottom = bar.offsetHeight + 8 + "px";
+    if (banner.hidden) track("install-banner-shown");
     banner.hidden = false;
   }
 
@@ -83,6 +86,7 @@
     });
     installBtn.addEventListener("click", async () => {
       if (!deferredPrompt) return;
+      track("install-clicked");
       const prompt = deferredPrompt;
       deferredPrompt = null; // the prompt can only be used once
       hide();
@@ -96,6 +100,7 @@
   }
 
   closeBtn.addEventListener("click", () => {
+    track("install-banner-closed");
     store.set(KEY_CLOSED, String(Date.now()));
     hide();
   });

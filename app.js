@@ -2,6 +2,8 @@
   "use strict";
 
   const { locations, items, prices } = window.PACE_DATA;
+  // Anonymous event counts (analytics.js). Only fixed names, never what people typed.
+  const track = (name) => { if (window.DevilBitesTrack) window.DevilBitesTrack(name); };
   const WEEKS_PER_SEMESTER = 15;
   // Where "Tell us." in the footer links to (a form or a mailto: link).
   // Leave empty to show it as plain text.
@@ -434,7 +436,10 @@
     else if (left < $row.scrollLeft) $row.scrollLeft = Math.max(0, left - 60);
   }
 
+  // Chips counted as "tab-…" events.
+  const CHIP_EVENTS = { Energy: "tab-caffeine", Protein: "tab-protein", Deals: "tab-deals", "Low calorie": "tab-low-cal" };
   function setFilter(f) {
+    if (f !== filter && CHIP_EVENTS[f]) track(CHIP_EVENTS[f]);
     filter = f;
     store.set("filter", filter);
     // A chip-only sort (e.g. Most caffeine) goes back to price when its chip is left.
@@ -443,6 +448,15 @@
   }
 
   $q.addEventListener("input", renderBrowse);
+  // One "search" event once typing pauses (the text itself is never sent).
+  let searchTimer = null, lastSearched = "";
+  $q.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const v = $q.value.trim().toLowerCase();
+      if (v && v !== lastSearched) { lastSearched = v; track("search"); }
+    }, 1500);
+  });
   $q.addEventListener("keydown", (e) => { if (e.key === "Enter") $q.blur(); });
   $clear.addEventListener("click", () => { $q.value = ""; renderBrowse(); $q.focus(); });
 
@@ -494,6 +508,7 @@
   try { const u = JSON.parse(store.get("usuals", "[]")); if (Array.isArray(u)) usuals = u.filter((n) => byName.has(n)); } catch { /* start empty */ }
   const isUsual = (name) => usuals.includes(name);
   function toggleUsual(name) {
+    if (!isUsual(name)) track("usual-added");
     usuals = isUsual(name) ? usuals.filter((n) => n !== name) : [...usuals, name];
     store.set("usuals", JSON.stringify(usuals));
   }
@@ -964,7 +979,10 @@
   $("pace-balance").value = pace.balance;
   $("pace-last").value = pace.lastDay;
   $("pace-last").min = iso(today());
-  $("pace-plan").addEventListener("change", (e) => { pace.plan = e.target.value; savePace(); renderPace(); });
+  $("pace-plan").addEventListener("change", (e) => {
+    pace.plan = e.target.value; savePace(); renderPace();
+    if (pace.plan) track("pace-setup");
+  });
   $("pace-balance").addEventListener("input", (e) => { pace.balance = e.target.value; savePace(); renderPace(); });
   $("pace-balance").addEventListener("blur", (e) => {
     const n = parseBalance(e.target.value);
@@ -975,6 +993,7 @@
     const b = e.target.closest("[data-day]");
     if (!b) return;
     const k = b.dataset.day;
+    if (!pace.away.includes(k)) track("away-day");
     pace.away = pace.away.includes(k) ? pace.away.filter((x) => x !== k) : [...pace.away, k].sort();
     savePace();
     renderPace();
@@ -1022,6 +1041,7 @@
 
     // Coming back to a list returns to where the user was in it.
     window.scrollTo(0, view === "item" ? 0 : scrollMemory[view] || 0);
+    if (tab !== currentTab) track({ browse: "tab-browse", me: "tab-my-pace", usuals: "tab-my-usuals" }[tab]);
     current = view;
     currentTab = tab;
   }
